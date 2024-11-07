@@ -1,0 +1,11 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(Urx CONFIG REQUIRED)
+
+set(UAC_MATLAB_INSTALL_DATADIR "@CMAKE_INSTALL_PREFIX@/@UAC_MATLAB_INSTALL_DATADIR@")
+
+include("${CMAKE_CURRENT_LIST_DIR}/UacTargets.cmake")
+
+check_required_components(Uac)
