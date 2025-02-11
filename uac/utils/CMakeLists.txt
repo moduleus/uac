@@ -1,12 +1,15 @@
 include(GenerateExportHeader)
 
 if(WITH_HDF5)
-  if(BUILD_SHARED_LIBS)
+  option(UAC_HDF5_LINK_SHARED "Link shared or static HDF5 lib"
+         ${BUILD_SHARED_LIBS})
+  if(UAC_HDF5_LINK_SHARED)
     set(LIB_TYPE SHARED)
   else()
     set(LIB_TYPE STATIC)
   endif()
   string(TOLOWER ${LIB_TYPE} SEARCH_TYPE)
+  message(STATUS "UacUtils linking hdf5 ${SEARCH_TYPE}")
 
   if(NOT TARGET hdf5::hdf5-${SEARCH_TYPE})
     find_package(HDF5 REQUIRED NAMES hdf5 COMPONENTS CXX ${SEARCH_TYPE})

@@ -8,6 +8,7 @@
 #include <H5Cpp.h>
 
 #include <urx/probe.h>
+#include <urx/utils/exception.h>
 #include <urx/utils/io/serialize_helper.h>
 #include <urx/utils/io/writer_impl.h>
 
@@ -24,14 +25,19 @@
 namespace uac::utils::io::writer {
 
 void saveToFile(const std::string& filename, const Dataset& dataset) {
-  const H5::H5File file(filename.data(), H5F_ACC_TRUNC);
-  MapToSharedPtr map_to_shared_ptr{{nameTypeid<Group>(), &dataset.acquisition.groups},
-                                   {nameTypeid<Probe>(), &dataset.acquisition.probes},
-                                   {nameTypeid<Excitation>(), &dataset.acquisition.excitations},
-                                   {nameTypeid<SuperGroup>(), &dataset.acquisition.super_groups}};
+  try {
+    const H5::H5File file(filename.data(), H5F_ACC_TRUNC);
 
-  urx::utils::io::writer::SerializeHdf5<Dataset, AllTypeInVariant, ContainerType::RAW>::f(
-      "dataset", dataset, file, map_to_shared_ptr, getMemberMap());
+    MapToSharedPtr map_to_shared_ptr{{nameTypeid<Group>(), &dataset.acquisition.groups},
+                                     {nameTypeid<Probe>(), &dataset.acquisition.probes},
+                                     {nameTypeid<Excitation>(), &dataset.acquisition.excitations},
+                                     {nameTypeid<SuperGroup>(), &dataset.acquisition.super_groups}};
+
+    urx::utils::io::writer::SerializeHdf5<Dataset, AllTypeInVariant, ContainerType::RAW>::f(
+        "dataset", dataset, file, map_to_shared_ptr, getMemberMap());
+  } catch (const H5::FileIException&) {
+    throw urx::utils::WriteFileException("Failed to write " + filename + ".");
+  }
 }
 
 }  // namespace uac::utils::io::writer

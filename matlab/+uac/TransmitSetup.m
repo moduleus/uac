@@ -5,8 +5,8 @@ classdef TransmitSetup < uac.Object
     delaysStd
   end
   properties (Access = public, SetObservable, GetObservable)
-    probe uac.Probe {mustBeScalarOrEmpty, urx.Validator.weakPtrInCpp}
-    wave uac.Wave {mustBeScalarOrEmpty, urx.Validator.rawInCpp}
+    probe uac.Probe {urx.Validator.mustBeScalarOrEmpty, urx.Validator.weakPtrInCpp}
+    wave uac.Wave {urx.Validator.mustBeScalarOrEmpty, urx.Validator.rawInCpp}
 
     activeElements(1,:) cell
 
@@ -14,7 +14,7 @@ classdef TransmitSetup < uac.Object
 
     delays(1,:) double
 
-    probeTransform uac.Transform {mustBeScalarOrEmpty, urx.Validator.rawInCpp}
+    probeTransform uac.Transform {urx.Validator.mustBeScalarOrEmpty, urx.Validator.rawInCpp}
 
     timeOffset(1,1) double
   end

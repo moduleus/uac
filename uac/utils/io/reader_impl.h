@@ -1,6 +1,5 @@
 #pragma once
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -208,7 +207,7 @@ struct DeserializeHdf5<std::weak_ptr<uac::IGroup>, U, ContainerType::WEAK_PTR> {
         const auto& map_i = getSharedPtr<uac::SuperGroup>(map);
         const size_t index = std::stoul(idx.substr(1));
 
-        if (map_i.size() > index) {
+        if (map_i.size() > index && map_i[index]) {
           field = map_i[index];
         } else {
           // NOLINTNEXTLINE
@@ -221,7 +220,7 @@ struct DeserializeHdf5<std::weak_ptr<uac::IGroup>, U, ContainerType::WEAK_PTR> {
         const auto& map_i = getSharedPtr<uac::Group>(map);
         const size_t index = std::stoul(idx.substr(1));
 
-        if (map_i.size() > index) {
+        if (map_i.size() > index && map_i[index]) {
           field = map_i[index];
         } else {
           // NOLINTNEXTLINE

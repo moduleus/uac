@@ -1,7 +1,7 @@
 classdef DestinationLink < uac.Object
   properties (Access = public, SetObservable, GetObservable)
-    trigger uac.TriggerIn {mustBeScalarOrEmpty, urx.Validator.optionalInCpp}
-    destination uac.IGroup {mustBeScalarOrEmpty, urx.Validator.weakPtrInCpp}
+    trigger uac.TriggerIn {urx.Validator.mustBeScalarOrEmpty, urx.Validator.optionalInCpp}
+    destination uac.IGroup {urx.Validator.mustBeScalarOrEmpty, urx.Validator.weakPtrInCpp}
   end
 
   methods

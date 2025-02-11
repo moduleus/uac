@@ -9,19 +9,25 @@
 
 #include "io.h"
 #include <urx/dataset.h>
+#include <urx/utils/exception.h>
 
 #include <uac/acquisition.h>
 #include <uac/dataset.h>
 #include <uac/destination_link.h>
 #include <uac/group.h>
 #include <uac/super_group.h>
+#include <uac/uac.h>
 #include <uac/utils/io/reader.h>
 #include <uac/utils/io/writer.h>
+#include <uac/version.h>
 
 namespace uac::utils::io::test {
 
-TEST_CASE("Write HDF5 file", "[hdf5_writer]") {
+TEST_CASE("Write HDF5 file", "[hdf5_writer][hdf5_reader]") {
   auto dataset = uac::utils::io::test::generateFakeDataset<Dataset>();
+  dataset->version.major = uac::UAC_VERSION_MAJOR;
+  dataset->version.minor = uac::UAC_VERSION_MINOR;
+  dataset->version.patch = uac::UAC_VERSION_PATCH;
 
   writer::saveToFile("writer康🐜.uac", *dataset);
 
@@ -50,6 +56,19 @@ TEST_CASE("Destination points to futur group / super group", "[hdf5_reader]") {
   auto dataset_loaded = reader::loadFromFile("futur_group.uac");
 
   REQUIRE(*dataset_loaded == *dataset);
+}
+
+TEST_CASE("Read failure HDF5 file", "[hdf5_reader]") {
+  REQUIRE_THROWS_AS(reader::loadFromFile("missing_file.uac"), urx::utils::ReadFileException);
+}
+
+TEST_CASE("Write failure HDF5 file", "[hdf5_writer]") {
+  const uac::Dataset dataset;
+#ifdef _WIN32
+  REQUIRE_THROWS_AS(writer::saveToFile("aux", dataset), urx::utils::WriteFileException);
+#else
+  REQUIRE_THROWS_AS(writer::saveToFile("/", dataset), urx::utils::WriteFileException);
+#endif
 }
 
 }  // namespace uac::utils::io::test

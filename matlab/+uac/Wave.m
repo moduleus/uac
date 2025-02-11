@@ -8,7 +8,7 @@ classdef Wave < uac.Object
 
     timeZero(1,1) double
 
-    timeZeroReferencePoint uac.Vector3D {mustBeScalarOrEmpty, urx.Validator.rawInCpp}
+    timeZeroReferencePoint uac.Vector3D {urx.Validator.mustBeScalarOrEmpty, urx.Validator.rawInCpp}
 
     parameters(1,:) double
   end

@@ -8,7 +8,7 @@ First, read README.md from urx/python/README.md.
 
 With this configuration, urx will be get from vcpkg registry (CMake set `-DWITH_VCPKG_URX:BOOL=ON`).
 
-You may add `--config-settings="--global-option=urx_src=D:\\repos\\urx"` if you want to use local urx repository. This will set `-DWITH_VCPKG_URX:BOOL=OFF` and `-DURX_SRC:STRING=${urx_src}`.
+You may add `--config-settings="--global-option=-DURX_SRC=D:\\repos\\urx"` if you want to use local urx repository. This will also set `-DWITH_VCPKG_URX:BOOL=OFF`.
 
 ## Technical choice
 

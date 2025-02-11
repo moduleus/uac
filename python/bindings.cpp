@@ -19,6 +19,7 @@
 #include <pybind11/pytypes.h>
 #include <pybind11/stl.h>       // IWYU pragma: keep
 #include <pybind11/stl_bind.h>  // IWYU pragma: keep
+#include <pyerrors.h>
 
 #include <urx/config.h>
 #include <urx/dataset.h>
@@ -30,6 +31,7 @@
 #include <urx/probe.h>
 #include <urx/python/bindings.h>
 #include <urx/transform.h>
+#include <urx/utils/exception.h>
 #include <urx/vector.h>
 #include <urx/wave.h>
 
@@ -785,6 +787,10 @@ PYBIND11_MODULE(bindings, m) {
 
   urx::python::registerDataset<uac::Dataset>(m, "Uac").def(
       py::init<const uac::Acquisition &, const uac::Version &>());
+
+  py::register_exception<urx::utils::ReadFileException>(m, "ReadFileException", PyExc_RuntimeError);
+  py::register_exception<urx::utils::WriteFileException>(m, "WriteFileException",
+                                                         PyExc_RuntimeError);
 
 #ifdef URX_WITH_HDF5
   m.def("loadFromFile", &uac::utils::io::reader::loadFromFile);

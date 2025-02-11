@@ -24,10 +24,10 @@ classdef Acquisition < uac.Object
   end
   properties (Access = public, SetObservable, GetObservable)
     superGroups(1,:) uac.SuperGroup {urx.Validator.sharedPtrInCpp}
-    initialGroup uac.IGroup {mustBeScalarOrEmpty, urx.Validator.weakPtrInCpp}
+    initialGroup uac.IGroup {urx.Validator.mustBeScalarOrEmpty, urx.Validator.weakPtrInCpp}
     timeOffset(1,1) double
-    triggerIn uac.TriggerIn {mustBeScalarOrEmpty, urx.Validator.optionalInCpp}
-    triggerOut uac.TriggerOut {mustBeScalarOrEmpty, urx.Validator.optionalInCpp}
+    triggerIn uac.TriggerIn {urx.Validator.mustBeScalarOrEmpty, urx.Validator.optionalInCpp}
+    triggerOut uac.TriggerOut {urx.Validator.mustBeScalarOrEmpty, urx.Validator.optionalInCpp}
     hwConfig struct {urx.Validator.rawInCpp}
   end
 

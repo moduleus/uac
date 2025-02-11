@@ -4,9 +4,9 @@ classdef ReceiveSetup < uac.Object
     tgcProfileStd
   end
   properties (Access = public, SetObservable, GetObservable)
-    probe uac.Probe {mustBeScalarOrEmpty, urx.Validator.weakPtrInCpp}
+    probe uac.Probe {urx.Validator.mustBeScalarOrEmpty, urx.Validator.weakPtrInCpp}
 
-    probeTransform uac.Transform {mustBeScalarOrEmpty, urx.Validator.rawInCpp}
+    probeTransform uac.Transform {urx.Validator.mustBeScalarOrEmpty, urx.Validator.rawInCpp}
 
     samplingFrequency(1,1) double
 

@@ -1,6 +1,6 @@
 classdef SuperGroup < uac.IGroup
   properties (Access = public, SetObservable, GetObservable)
-    initialGroup uac.IGroup {mustBeScalarOrEmpty, urx.Validator.weakPtrInCpp}
+    initialGroup uac.IGroup {urx.Validator.mustBeScalarOrEmpty, urx.Validator.weakPtrInCpp}
     description char
   end
 

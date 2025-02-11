@@ -4,7 +4,7 @@ classdef Object < urx.Object
       this@urx.Object(varargin{:});
     end
 
-    function res = getInstance(this)
+    function res = getInstance(this) %#ok<MANU>
       res = uac.LibBinding.getInstance();
     end
   end

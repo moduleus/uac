@@ -49,7 +49,7 @@ endif()
 
 project(
   Uac
-  VERSION 1.0.2
+  VERSION 1.1.0
   LANGUAGES C CXX
   DESCRIPTION "Ultrasound Acquisition Configuration format C++ implementation")
 
@@ -268,7 +268,10 @@ endif()
 
 if(NOT TARGET Urx::Urx)
   if(NOT URX_SRC STREQUAL "")
+    set(BUILD_TESTING_BACKUP ${BUILD_TESTING})
+    set(BUILD_TESTING OFF)
     add_subdirectory(${URX_SRC} urx_build EXCLUDE_FROM_ALL)
+    set(BUILD_TESTING ${BUILD_TESTING_BACKUP})
   else()
     find_package(Urx REQUIRED)
   endif()
@@ -282,15 +285,19 @@ add_subdirectory("uac")
 
 if(WITH_MATLAB)
   add_subdirectory(matlab)
+  if(NOT URX_SRC STREQUAL "")
+    add_dependencies(UacMatlabBinding UrxMatlabBinding)
+  endif()
 endif()
 
 if(WITH_PYTHON)
   add_subdirectory(python)
+  if(NOT URX_SRC STREQUAL "")
+    add_dependencies(UacBindingsPython UrxPython)
+  endif()
 endif()
 
-if(BUILD_TESTING)
-  add_subdirectory(test)
-endif()
+add_subdirectory(test)
 
 # Create cmake config files ###
 write_basic_package_version_file(

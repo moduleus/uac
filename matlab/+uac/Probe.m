@@ -9,7 +9,7 @@ classdef Probe < uac.Object
 
     type(1,1) int32
 
-    transform uac.Transform {mustBeScalarOrEmpty, urx.Validator.rawInCpp}
+    transform uac.Transform {urx.Validator.mustBeScalarOrEmpty, urx.Validator.rawInCpp}
 
     elementGeometries(1,:) uac.ElementGeometry {urx.Validator.sharedPtrInCpp}
     impulseResponses(1,:) uac.ImpulseResponse {urx.Validator.sharedPtrInCpp}

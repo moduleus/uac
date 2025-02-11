@@ -17,9 +17,11 @@ test/python/__pycache__/
 
 *.asv
 
-/.venv/
+/.venv*/
 /vcpkg/
 /vcpkg_installed/
+/vcpkg-registry/
+/urx/
 
 /test/python/urx_python_path.txt
 

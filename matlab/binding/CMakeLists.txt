@@ -9,8 +9,8 @@ add_library(UacMatlabBinding SHARED)
 add_library(uac::UacMatlabBinding ALIAS UacMatlabBinding)
 
 if(UNIX)
-  target_link_options(UacMatlabBinding PRIVATE "-static-libgcc"
-                      "-static-libstdc++")
+  target_link_options(UacMatlabBinding PRIVATE "-static-libstdc++"
+                      "-static-libgcc")
 endif(UNIX)
 
 target_sources(

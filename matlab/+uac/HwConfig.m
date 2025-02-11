@@ -37,7 +37,8 @@ classdef HwConfig < uac.Object
 
     function res = getType(this, idx)
       resInt = this.libBindingRef.call(this.functionName('get_type'), this, idx-1);
-      enumList = metaclass(uac.HwConfigEnum.uint8).EnumerationMemberList;
+      metaclassUint8 = metaclass(uac.HwConfigEnum.uint8);
+      enumList = metaclassUint8.EnumerationMemberList;
       res = uac.HwConfigEnum.(enumList(resInt+1).Name);
     end
 
@@ -122,7 +123,8 @@ classdef HwConfig < uac.Object
     end
 
     function set(this, attribute, type, value)
-      enumList = metaclass(type).EnumerationMemberList;
+      metaclassType = metaclass(type);
+      enumList = metaclassType.EnumerationMemberList;
       enumIdx = uint32(find(arrayfun(@(x) strcmp(x.Name, type), enumList))-1);
       functionName = 'set';
       if ischar(value)

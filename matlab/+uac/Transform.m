@@ -1,7 +1,7 @@
 classdef Transform < uac.Object
   properties (Access = public, SetObservable, GetObservable)
-    rotation uac.Vector3D {mustBeScalarOrEmpty, urx.Validator.rawInCpp}
-    translation uac.Vector3D {mustBeScalarOrEmpty, urx.Validator.rawInCpp}
+    rotation uac.Vector3D {urx.Validator.mustBeScalarOrEmpty, urx.Validator.rawInCpp}
+    translation uac.Vector3D {urx.Validator.mustBeScalarOrEmpty, urx.Validator.rawInCpp}
   end
 
   methods

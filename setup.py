@@ -135,10 +135,9 @@ else:
             # python dynamic
             VCPKG_TRIPLET += "p"
 
-urx_src_arg = next((arg for arg in sys.argv if arg.startswith("urx_src=")), None)
+urx_src_arg = next((arg for arg in sys.argv if arg.startswith("-DURX_SRC")), None)
 if urx_src_arg != None:
     sys.argv.remove(urx_src_arg)
-    urx_src_arg = urx_src_arg[len("urx_src=") :]
 
 hdf5_arg = next((arg for arg in sys.argv if arg.startswith("-DWITH_HDF5")), None)
 if hdf5_arg != None:
@@ -167,7 +166,7 @@ if CMAKE_TOOLCHAIN_FILE_arg is not None:
 
 if urx_src_arg != None:
     cmake_configure_options.append("-DWITH_VCPKG_URX:BOOL=OFF")
-    cmake_configure_options.append(f"-DURX_SRC:STRING={urx_src_arg}")
+    cmake_configure_options.append(f"{urx_src_arg}")
 elif DISABLE_VCPKG_arg is None:
     cmake_configure_options.append("-DWITH_VCPKG_URX:BOOL=ON")
 

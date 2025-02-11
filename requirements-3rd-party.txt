@@ -1,0 +1,2 @@
+vcpkg-registry @ github.com/moduleus/vcpkg-registry.git@0b9563eb24fa715e839fa66ba5c60813562ff0bc
+urx @ github.com/moduleus/urx.git@4389f07c23ac6c1a08c041f8f626ae95f41649cf

@@ -44,12 +44,12 @@ classdef CreateUff < matlab.unittest.TestCase
       testcase.verifyEqual(dataset.version.minor, uint16(1));
       testcase.verifyEqual(dataset.version.major, uint16(42));
       testcase.verifyEqual(dataset.version.patch, uint16(73));
-      dataset.version.minor = 7;
-      dataset.version.major = 48;
-      dataset.version.patch = 159;
-      testcase.verifyEqual(version.minor, uint16(7));
-      testcase.verifyEqual(version.major, uint16(48));
-      testcase.verifyEqual(version.patch, uint16(159));
+      dataset.version.minor = uac.Version().minor;
+      dataset.version.major = uac.Version().major;
+      dataset.version.patch = uac.Version().patch;
+      testcase.verifyEqual(version.minor, uint16(uac.Version().minor));
+      testcase.verifyEqual(version.major, uint16(uac.Version().major));
+      testcase.verifyEqual(version.patch, uint16(uac.Version().patch));
       
       
       dataset.acquisition.authors = 'AuthOr';
@@ -61,8 +61,8 @@ classdef CreateUff < matlab.unittest.TestCase
       
       probe1 = uac.Probe();
       probe1.description = 'Probe 1';
-      probe1.type = urx.Probe.ProbeType.MATRIX;
-      testcase.verifyEqual(probe1.type, urx.Probe.ProbeType.MATRIX);
+      probe1.type = uac.Probe.ProbeType.MATRIX;
+      testcase.verifyEqual(probe1.type, uac.Probe.ProbeType.MATRIX);
       probe1.transform.rotation.x = 1;
       probe1.transform.rotation.y = 2;
       probe1.transform.rotation.z = 3;
@@ -220,8 +220,10 @@ classdef CreateUff < matlab.unittest.TestCase
       dataset.acquisition.excitations = [excitation1, excitation2];
       
       group1 = uac.Group();
-      group1.samplingType = urx.Group.SamplingType.IQ;
-      group1.dataType = urx.Group.DataType.INT16;
+      % Check read of a never written value.
+      group1.timeOffset;
+      group1.samplingType = uac.Group.SamplingType.IQ;
+      group1.dataType = uac.Group.DataType.INT16;
       group1.soundSpeed = 1500.;
       testcase.verifyEqual(group1.soundSpeed, 1500);
       
@@ -234,7 +236,7 @@ classdef CreateUff < matlab.unittest.TestCase
       event1.transmitSetup.probeTransform.translation.y = 4.3;
       event1.transmitSetup.probeTransform.translation.z = 8.2;
       event1.transmitSetup.timeOffset = 120.2;
-      event1.transmitSetup.wave.type = urx.Wave.WaveType.CYLINDRICAL_WAVE;
+      event1.transmitSetup.wave.type = uac.Wave.WaveType.CYLINDRICAL_WAVE;
       event1.transmitSetup.wave.timeZeroReferencePoint.x = 5;
       event1.transmitSetup.wave.timeZeroReferencePoint.y = 4;
       event1.transmitSetup.wave.timeZeroReferencePoint.z = 4;
@@ -268,7 +270,7 @@ classdef CreateUff < matlab.unittest.TestCase
       event2.transmitSetup.probeTransform.translation.y = 463;
       event2.transmitSetup.probeTransform.translation.z = 872;
       event2.transmitSetup.timeOffset = 12052;
-      event2.transmitSetup.wave.type = urx.Wave.WaveType.CONVERGING_WAVE;
+      event2.transmitSetup.wave.type = uac.Wave.WaveType.CONVERGING_WAVE;
       event2.transmitSetup.wave.timeZeroReferencePoint.x = 1;
       event2.transmitSetup.wave.timeZeroReferencePoint.y = 2;
       event2.transmitSetup.wave.timeZeroReferencePoint.z = 3;
@@ -298,8 +300,8 @@ classdef CreateUff < matlab.unittest.TestCase
       
       
       group2 = uac.Group();
-      group2.samplingType = urx.Group.SamplingType.RF;
-      group2.dataType = urx.Group.DataType.DOUBLE;
+      group2.samplingType = uac.Group.SamplingType.RF;
+      group2.dataType = uac.Group.DataType.DOUBLE;
       group2.soundSpeed = 1550.;
       
       event1 = uac.Event();
@@ -311,7 +313,7 @@ classdef CreateUff < matlab.unittest.TestCase
       event1.transmitSetup.probeTransform.translation.y = 4.83;
       event1.transmitSetup.probeTransform.translation.z = 8.52;
       event1.transmitSetup.timeOffset = 1202.2;
-      event1.transmitSetup.wave.type = urx.Wave.WaveType.CYLINDRICAL_WAVE;
+      event1.transmitSetup.wave.type = uac.Wave.WaveType.CYLINDRICAL_WAVE;
       event1.transmitSetup.wave.timeZeroReferencePoint.x = 3;
       event1.transmitSetup.wave.timeZeroReferencePoint.y = 4;
       event1.transmitSetup.wave.timeZeroReferencePoint.z = 5;
@@ -345,7 +347,7 @@ classdef CreateUff < matlab.unittest.TestCase
       event2.transmitSetup.probeTransform.translation.y = 43;
       event2.transmitSetup.probeTransform.translation.z = 82;
       event2.transmitSetup.timeOffset = 1202;
-      event2.transmitSetup.wave.type = urx.Wave.WaveType.CONVERGING_WAVE;
+      event2.transmitSetup.wave.type = uac.Wave.WaveType.CONVERGING_WAVE;
       event2.transmitSetup.wave.timeZeroReferencePoint.x = 6;
       event2.transmitSetup.wave.timeZeroReferencePoint.y = 5;
       event2.transmitSetup.wave.timeZeroReferencePoint.z = 2;
@@ -535,11 +537,13 @@ classdef CreateUff < matlab.unittest.TestCase
       hwconfig4.field1 = 'coucou2';
       excitation.hwConfig.hw_vhw = {hwconfig3, hwconfig4};
 
-      dataset.saveToFile('test.uac');
+      uac.saveToFile('test.uac', dataset);
 
-      datasetUrx = dataset.toUrx();
+      datasetUrx = uac.toUrx(dataset);
       
       testcase.verifyEqual(datasetUrx.acquisition.description, dataset.acquisition.description);
+
+      uacLoaded = uac.loadFromFile('test.uac');
 
       delete 'test.uac'
     end

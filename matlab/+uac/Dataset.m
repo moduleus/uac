@@ -1,7 +1,7 @@
 classdef Dataset < uac.Object
   properties (Access = public, SetObservable, GetObservable)
-    version uac.Version {mustBeScalarOrEmpty, urx.Validator.rawInCpp}
-    acquisition uac.Acquisition {mustBeScalarOrEmpty, urx.Validator.rawInCpp}
+    version uac.Version {urx.Validator.mustBeScalarOrEmpty, urx.Validator.rawInCpp}
+    acquisition uac.Acquisition {urx.Validator.mustBeScalarOrEmpty, urx.Validator.rawInCpp}
   end
 
   methods
@@ -10,15 +10,12 @@ classdef Dataset < uac.Object
     end
 
     function saveToFile(this, filename)
-      arguments
-        this
-        filename char
-      end
-
+      warning('uac.Dataset.saveTofile is depreciated. Use static method uac.saveToFile(filename, dataset).');
       this.libBindingRef.call('uac_save_to_file', filename, this.id);
     end
 
     function res = toUrx(this)
+      warning('uac.Dataset.toUrx is depreciated. Use static method uac.toUrx(dataset).');
       dataset_ptr = this.libBindingRef.call('uac_to_urx', this.id);
       res = urx.Dataset(dataset_ptr, urx.PtrType.SHARED, []);
     end
@@ -26,10 +23,7 @@ classdef Dataset < uac.Object
 
   methods(Static)
     function this = loadFromFile(filename)
-      arguments
-        filename char
-      end
-
+      warning('uac.Dataset.loadFromFile is depreciated. Use static method uac.loadFromFile(filename).');
       dataset_ptr = uac.LibBinding.getInstance().call('uac_load_from_file', filename);
       this = uac.Dataset(dataset_ptr, urx.PtrType.SHARED, []);
     end

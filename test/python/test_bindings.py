@@ -607,6 +607,8 @@ class TestBindings(unittest.TestCase):
         dataset_urx = uac.toUrx(dataset_uac)
         self.assertEqual(dataset_urx.acquisition.description, dataset_uac.acquisition.description)
 
+        print("\n--Test %s END--" % testName)
+
     def test_vector2d_run(
         self,
     ):

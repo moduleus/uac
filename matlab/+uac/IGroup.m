@@ -7,8 +7,8 @@ classdef IGroup < uac.Object
   end
   properties (Access = public, SetObservable, GetObservable)
     timeOffset double
-    triggerIn uac.TriggerIn {mustBeScalarOrEmpty, urx.Validator.optionalInCpp}
-    triggerOut uac.TriggerOut {mustBeScalarOrEmpty, urx.Validator.optionalInCpp}
+    triggerIn uac.TriggerIn {urx.Validator.mustBeScalarOrEmpty, urx.Validator.optionalInCpp}
+    triggerOut uac.TriggerOut {urx.Validator.mustBeScalarOrEmpty, urx.Validator.optionalInCpp}
     repetitionCount uint32
     destinations(1,:) uac.DestinationLink {urx.Validator.rawInCpp}
     period double

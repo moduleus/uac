@@ -12,15 +12,24 @@ You may use it with various languages (C++, Python and MATLAB).
 
 To use Uac library, you need to have Urx library installed.
 
-## C++
+## Table of Contents
 
-### CMake
+  * Common installation and usage in [C++](#use-it-with-c), [MATLAB](#use-it-with-matlab), [Python](#use-it-with-python).
+  * Build it yourself for C++, MATLAB, Python with [CMake](#build-it-with-cmake).
 
-#### Available files
+## Use it with C++
+
+### C++/CMake
+
+#### C++ installer
+
+There is no installer for C++ user. You need to [build](#build-it-with-cmake) it yourself. If you don't need to read / write file, uac library is header-only.
+
+#### Installed files
 
 All CMake files will be installed in `INSTALL_PATH/lib/cmake/Uac-XXXYYY/` with:
-  - XXX: the version of the Uac library,
-  - YYY: empty if library has been built in shared mode, "_static" if library is static.
+  - XXX: the version of the Uac library (i.e. `1.1.0`),
+  - YYY: empty if library has been built in shared mode, `_static` if library is static.
 
 #### Configuration
 
@@ -30,6 +39,8 @@ First, you need to get Uac package with `find_package`.
 find_package(Uac REQUIRED)
 ```
 
+If package is not found, set `Uac_DIR=INSTALL_PATH/lib/cmake/Uac-XXXYYY`.
+
 You don't need to `find_package(Urx)`. The Uac library will do it.
 
 You will have access to targets:
@@ -37,7 +48,7 @@ You will have access to targets:
   - `Uac::Uac`: header-only library of the uac struct.
   - `Uac::UacUtils`: library with helper to manipulate uac struct, including read / write in hdf5 file format.
 
-#### Usage
+#### Examples
 
 ```cmake
 add_executable(UacTestIo ${SRCS_FILES})
@@ -49,19 +60,19 @@ target_link_libraries(
 
 `HDF5_CXX_LIBRARIES` is only needed if the library has been built with HDF5 support.
 
-You may found a complete example in `test/uac` or in `test/io` folders.
+You may found a complete example of `CMakeLists.txt` in `test/uac` or in `test/io` folders.
 
-### C++
+### C++ code
 
-#### Available files
+#### Installed files
 
 All files will be installed in :
 
   - `INSTALL_PATH/include/Uac-XXXYYY/` (headers),
-  - `INSTALL_PATH/lib` (static libraries),
-  - `INSTALL_PATH/bin` (executables and libraries for Windows only).
+  - `INSTALL_PATH/lib` (dynamic libraries for Linux and static libraries for all operating system),
+  - `INSTALL_PATH/bin` (dynamic libraries for Windows and executables for all operating system).
 
-#### Usage
+#### Examples
 
 All dynamic memory allocation should be stored in a `shared_ptr`.
 
@@ -69,6 +80,9 @@ All dynamic memory allocation should be stored in a `shared_ptr`.
 #include <memory>
 
 #include <uac/dataset.h>
+#include <uac/probe.h>
+#include <uac/utils/io/reader.h>
+#include <uac/utils/io/writer.h>
 
 auto dataset = std::make_shared<uac::Dataset>();
 
@@ -81,21 +95,110 @@ uac::utils::io::writer::saveToFile("file.uac", *dataset);
 auto dataset_loaded = uac::utils::io::reader::loadFromFile("file.uac");
 ```
 
-You may found a complete example in file `uac/utils/io/test/io.h` in function `generateFakeDataset`.
+You may found an example for all C++ classes in file `uac/utils/io/test/io.h` in function `generateFakeDataset`.
 
-## MATLAB
+## Use it with MATLAB
 
-### Available files
+### MATLAB installer
 
-All MATLAB files will be installed in :
+Uac MATLAB homepage is hosted in [MATLAB File Exchange](https://fr.mathworks.com/matlabcentral/fileexchange/176403-ultrasound-acquisition-configuration) but binaries are hosted in [Github releases](https://github.com/moduleus/uac/releases). Be sure to click on `Show all 25 assets`, download your toolbox (`uac-X.Y.Z-linux-amd64.mltbx` for Linux or `uac-X.Y.Z-win-amd64.mltbx` for Windows) then open the toolbox with MATLAB.
 
-    - `INSTALL_PATH/share/Uac-XXXYYY/matlab` (scripts),
-    - `INSTALL_PATH/lib` (static libraries),
-    - `INSTALL_PATH/bin` (shared libraries for Windows only).
+You also need to install Urx toolbox from [Github releases](https://github.com/moduleus/urx/releases).
+
+### Requirements
+
+MATLAB needs a C compiler to load the C library in Uac toolbox.
+
+If you have an error like `MATLAB:mex:NoCompilerFound_link_Win64` / `No supported compiler was found` / `Output from preprocessor is:'cl' is not recognized as an internal or external command, operable program or batch file.`, run `mex -setup c -v` and `mex -setup c++ -v`.
+
+<details>
+  <summary>Example of full error message</summary>
+
+```
+... Looking for compiler 'Intel Parallel Studio XE 2015 for C++ with Microsoft Visual Studio 2015' ...
+... Looking for environment variable 'ICPP_COMPILER15' ...No.
+Did not find installed compiler 'Intel Parallel Studio XE 2015 for C++ with Microsoft Visual Studio 2015'.
+... Looking for compiler 'Intel Parallel Studio XE 2016 for C++ with Microsoft Visual Studio 2015' ...
+... Looking for environment variable 'ICPP_COMPILER16' ...No.
+Did not find installed compiler 'Intel Parallel Studio XE 2016 for C++ with Microsoft Visual Studio 2015'.
+... Looking for compiler 'Intel Parallel Studio XE 2017 for C++ with Microsoft Visual Studio 2015' ...
+... Looking for environment variable 'ICPP_COMPILER17' ...No.
+Did not find installed compiler 'Intel Parallel Studio XE 2017 for C++ with Microsoft Visual Studio 2015'.
+... Looking for compiler 'Intel Parallel Studio XE 2017 for C++ with Microsoft Visual Studio 2017' ...
+... Looking for environment variable 'ICPP_COMPILER17' ...No.
+Did not find installed compiler 'Intel Parallel Studio XE 2017 for C++ with Microsoft Visual Studio 2017'.
+... Looking for compiler 'Intel Parallel Studio XE 2018 for C++ with Microsoft Visual Studio 2015' ...
+... Looking for environment variable 'ICPP_COMPILER18' ...No.
+Did not find installed compiler 'Intel Parallel Studio XE 2018 for C++ with Microsoft Visual Studio 2015'.
+... Looking for compiler 'Intel Parallel Studio XE 2018 for C++ with Microsoft Visual Studio 2017' ...
+... Looking for environment variable 'ICPP_COMPILER18' ...No.
+Did not find installed compiler 'Intel Parallel Studio XE 2018 for C++ with Microsoft Visual Studio 2017'.
+... Looking for compiler 'MinGW64 Compiler (C++)' ...
+... Looking for environment variable 'MW_MINGW64_LOC' ...No.
+Did not find installed compiler 'MinGW64 Compiler (C++)'.
+... Looking for compiler 'MinGW64 Compiler with Windows 10 SDK or later (C++)' ...
+... Looking for environment variable 'MW_MINGW64_LOC' ...No.
+Did not find installed compiler 'MinGW64 Compiler with Windows 10 SDK or later (C++)'.
+... Looking for compiler 'Microsoft Visual C++ 2013' ...
+... Looking for registry setting 'HKLM\SOFTWARE\Microsoft\VisualStudio\SxS\VS7' 12.0 ...No.
+... Looking for registry setting 'HKCU\SOFTWARE\Microsoft\VisualStudio\SxS\VS7' 12.0 ...No.
+... Looking for registry setting 'HKLM\SOFTWARE\Wow6432Node\Microsoft\VisualStudio\SxS\VS7' 12.0 ...No.
+... Looking for registry setting 'HKCU\SOFTWARE\Wow6432Node\Microsoft\VisualStudio\SxS\VS7' 12.0 ...No.
+Did not find installed compiler 'Microsoft Visual C++ 2013'.
+... Looking for compiler 'Microsoft Visual C++ 2015' ...
+... Looking for registry setting 'HKLM\SOFTWARE\Microsoft\VisualStudio\SxS\VC7' 14.0 ...No.
+... Looking for registry setting 'HKCU\SOFTWARE\Microsoft\VisualStudio\SxS\VC7' 14.0 ...No.
+... Looking for registry setting 'HKLM\SOFTWARE\Wow6432Node\Microsoft\VisualStudio\SxS\VC7' 14.0 ...No.
+... Looking for registry setting 'HKCU\SOFTWARE\Wow6432Node\Microsoft\VisualStudio\SxS\VC7' 14.0 ...No.
+Did not find installed compiler 'Microsoft Visual C++ 2015'.
+... Looking for compiler 'Microsoft Visual C++ 2017' ...
+... Looking for registry setting 'HKLM\SOFTWARE\Microsoft\VisualStudio\SxS\VS7' 15.0 ...No.
+... Looking for registry setting 'HKCU\SOFTWARE\Microsoft\VisualStudio\SxS\VS7' 15.0 ...No.
+... Looking for registry setting 'HKLM\SOFTWARE\Wow6432Node\Microsoft\VisualStudio\SxS\VS7' 15.0 ...No.
+... Looking for registry setting 'HKCU\SOFTWARE\Wow6432Node\Microsoft\VisualStudio\SxS\VS7' 15.0 ...No.
+Did not find installed compiler 'Microsoft Visual C++ 2017'.
+... Looking for compiler 'MinGW64 Compiler (C++)' ...
+... Looking for environment variable 'MW_MINGW64_LOC' ...No.
+Did not find installed compiler 'MinGW64 Compiler (C++)'.
+Error using mex
+No supported compiler was found. You can install the freely
+Installed MinGW-w64 C/C++ compiler; see Install MinGW-w64
+Compiler. For more options, visit
+https://www.mathworks.com/support/compilers.
+```
+
+</details>
+
+#### Use MinGW
+
+If you want to use a free compiler, follow the next steps:
+
+  - Download `MinGW-w64` from [https://www.mingw-w64.org/downloads](https://www.mingw-w64.org/downloads). You may use `LLVM-MinGW` at Github [https://github.com/mstorsjo/llvm-mingw/releases](https://github.com/mstorsjo/llvm-mingw/releases) and get the latest release from the file `llvm-mingw-YYYYMMDD-msvcrt-x86_64.zip`.
+  - Extract it and install it on `c:\llvm-mingw-YYYYMMDD-msvcrt-x86_64` (path `c:\llvm-mingw-YYYYMMDD-msvcrt-x86_64\bin` must exist) or anywhere but don't use path with space inside.
+  - In MATLAB, run:
+```MATLAB
+setenv('MW_MINGW64_LOC', 'C:/llvm-mingw-YYYYMMDD-msvcrt-x86_64')
+mex -setup c -v
+mex -setup c++ -v
+```
+Check you have a message `Found installed compiler 'MinGW64 Compiler (C++)'.`.
+
+### Installed files
+
+All MATLAB files will be installed in `C:\Users\CURRENT_USER\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\uac` :
+
+  - `+uac` (all MATLAB script),
+  - `include` (C++ header, needed to get symbols in C++ library),
+  - `UacMatlabBinding.dll` (main C++ library).
 
 ### Configuration
 
-If you are using Uac from MATLAB toolkit, you just have to enable Unicode if you need it (`feature('DefaultCharacterSet','UTF-8');`).
+If you are using Uac from MATLAB toolbox, you just have to enable Unicode if you need it (`feature('DefaultCharacterSet','UTF-8');`).
+
+If you want to enable logging, set `UAC_DEBUG` environment variable to:
+
+  - `COUT` to display message to the standard output or,
+  - the filename where you want to store log messages.
 
 If you built Uac from source, before using `Uac` in MATLAB, you first need to:
 
@@ -112,7 +215,7 @@ uac.LibBinding.getInstance([path to libUacMatlabBinding.so], [path to INSTALL_PA
 
 ⚠ When invoking `urx.LibBinding.getInstance` the first time, environment variable `HDF5_DISABLE_VERSION_CHECK` is set. MATLAB have it's own version of HDF5 library. Under Linux it will conflict with the one from Uac.
 
-If you try to use `dataset.saveToFile(...)` or `uac.Dataset.loadFromFile(...)` without setting `HDF5_DISABLE_VERSION_CHECK`, MATLAB will crash with error: `Headers are 1.8.23, library is 1.8.12`.
+If you try to use `uac.saveToFile(...)` or `uac.loadFromFile(...)` without setting `HDF5_DISABLE_VERSION_CHECK`, MATLAB will crash with error: `Headers are 1.8.23, library is 1.8.12`.
 
 <details>
   <summary>Example of full error message</summary>
@@ -193,7 +296,7 @@ Uac must use the same version (at least major / minor number) than the one from 
 
 Why is there a problem? Under Linux, the same symbol from two differents libraries are merged. So you can't know which one will be used. By setting `HDF5_DISABLE_VERSION_CHECK` to 1, you are disabling version check. Under Windows, the operating system keeps symbols from different libraries separate.
 
-### Usage
+### Examples
 
 ```MATLAB
 dataset = uac.Dataset();
@@ -202,9 +305,9 @@ probe1 = uac.Probe();
 probe1.description = 'Probe 1';
 dataset.acquisition.excitations = [excitation1];
 
-dataset.saveToFile('test.uac');
+uac.saveToFile('test.uac', dataset);
 
-dataset2 = uac.Dataset.loadFromFile('test.uac');
+dataset2 = uac.loadFromFile('test.uac');
 ```
 
 You may found a complete example in file `test/matlab/+uac/+UnitTests/CreateUff.m`.
@@ -213,9 +316,13 @@ You may found a complete example in file `test/matlab/+uac/+UnitTests/CreateUff.
 
 Some field are optional or can be empty (see C++ UML diagram). If you want to unassign a value, don't use `[]` but use `empty` method of the class (i.e. `uac.ElementGeometry.empty`).
 
-## Python
+## Use it with Python
 
-### Usage
+### Python wheel
+
+Uac MATLAB homepage is hosted in [Pypi](https://pypi.org/project/ultrasound-acquisition-configuration/). Binaries are hosted in Pypi and [Github releases](https://github.com/moduleus/uac/releases). Be sure to click on `Show all 25 assets`, download the wheel of your python version (i.e. `ultrasound_acquisition_configuration-1.1.0-cp312-cp312-win32.whl`) then run `pip install ultrasound_acquisition_configuration-1.1.0-cp312-cp312-win32.whl`.
+
+### Examples
 
 ```python
 import ultrasound_acquisition_configuration as uac;
@@ -231,21 +338,53 @@ uac.saveToFile('test.uac', dataset)
 dataset2 = uac.loadFromFile('test.uac')
 ```
 
-You may found a basic usage in folder `test/python`.
+You may found a basic example in folder `test/python`.
 
 ## Build it with CMake
 
+You can use CMake to build urx for C++ / MATLAB / Python user.
+
 See `.gitlab-ci.yml` file for various examples.
 
-### Windows
+### Build for Windows
+
+Requirements:
+
+  * [git](https://gitforwindows.org/),
+  * [cmake v3.28](https://gitforwindows.org/),
+  * [Python v3.8 minimum](https://www.python.org/downloads/),
 
 Under Windows, you need to explicitly set Visual Studio generator.
 
 `cmake.exe -S root_path -B CI -G "Visual Studio 17 2022" -A x64`
 
-### Linux
+Full example with urx already built in git-bash console:
+
+```sh
+git clone https://github.com/moduleus/uac.git
+cd uac
+git clone https://github.com/microsoft/vcpkg.git
+vcpkg/bootstrap-vcpkg.bat
+git clone https://github.com/moduleus/vcpkg-registry.git
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS=OFF -DURX_SRC=../urx -DVCPKG_TARGET_TRIPLET=x64-wsmep -DVCPKG_HOST_TRIPLET=x64-wsmep -DVCPKG_OVERLAY_TRIPLETS=vcpkg-registry/triplets -DWITH_PYTHON:BOOL=ON -DWITH_PYTHON_WHL:BOOL=ON -DWITH_HDF5:BOOL=ON -DWITH_MATLAB:BOOL=ON -DBUILD_TESTING:BOOL=OFF -DENABLE_PCH:BOOL=OFF -DCMAKE_INSTALL_PREFIX=install
+cmake --build build --config Release --parallel 4
+```
+
+### Build for Linux
 
 `cmake -S . -B CI`
+
+Full example with urx already built:
+
+```sh
+git clone https://github.com/moduleus/uac.git
+cd uac
+git clone https://github.com/microsoft/vcpkg.git
+vcpkg/bootstrap-vcpkg.sh
+git clone https://github.com/moduleus/vcpkg-registry.git
+cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DURX_SRC=../urx -DVCPKG_TARGET_TRIPLET=x64-lsrp -DVCPKG_HOST_TRIPLET=x64-lsrp -DVCPKG_OVERLAY_TRIPLETS=vcpkg-registry/triplets -DWITH_PYTHON:BOOL=ON -DWITH_PYTHON_WHL:BOOL=ON -DWITH_HDF5:BOOL=ON -DWITH_MATLAB:BOOL=ON -DBUILD_TESTING:BOOL=OFF -DENABLE_PCH:BOOL=OFF -DCMAKE_INSTALL_PREFIX=install
+cmake --build build --parallel 4
+```
 
 ### Common features
 
@@ -263,7 +402,11 @@ Set `BUILD_SHARED_LIBS` to `OFF` or `ON`.
 
 Note that you should set `BUILD_SHARED_LIBS` to `OFF` if you want to build MATLAB or Python buiding.
 
-Be sure to use a vcpkg triplet with the same shared / static link option.
+Be sure to use a vcpkg triplet with the same shared / static link option. For example:
+  - Windows and static: `x64-wsmep`
+  - Windows and shared: `x64-wdrep`
+  - Linux and static: `x64-lsrp`
+  - Linux and shared: `x64-ldr`
 
   * Use external 3rd party with vcpkg
 
@@ -271,7 +414,7 @@ Be sure to use a vcpkg triplet with the same shared / static link option.
 
 Also, be sure that submodule `vcpkg-registry` is initialized with `git submodule update --init --recursive`.
 
-Then pass the following arguments:
+Then pass the arguments below. ⚠ If you use `cmake-gui`, be sure to set these variables BEFORE running configure once. Otherwise, you need to reset cache.
 
 Windows:
 ```cmake
@@ -337,7 +480,7 @@ You need to set lots of CMake variables and use CMake 3.29 if you want to use `C
 
 You may found various command to build Uac in file `.gitlab-ci.yml`.
 
-## Build it with pip wheel
+## Build Python module with pip wheel
 
 ### Using vcpkg
 

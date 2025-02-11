@@ -1,6 +1,0 @@
-[submodule "urx"]
-	path = urx
-	url = ../urx.git
-[submodule "vcpkg-registry"]
-	path = vcpkg-registry
-	url = ../vcpkg-registry.git
