@@ -35,7 +35,7 @@ def test_trigger_out(
     # Check default CTOR
     trigger_out = trigger_out_constructor()
     self.assertEqual(trigger_out.channel, "")
-    self.assertTrue(math.isnan(trigger_out.time_offset.value))
+    self.assertEqual(trigger_out.time_offset.value, 0)
     self.assertTrue(math.isnan(trigger_out.pulse_duration.value))
 
     # Check copy CTOR and referencing object

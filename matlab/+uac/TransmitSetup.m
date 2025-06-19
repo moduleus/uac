@@ -1,5 +1,5 @@
 classdef TransmitSetup < uac.Object
-  properties (Access = public)
+  properties (Access = ?urx.Object)
     activeElementsStd
     excitationsStd
     delaysStd

@@ -1,3 +1,4 @@
 function saveToFile(filename, dataset)
-  uac.LibBinding.getInstance().call('uac_save_to_file', filename, dataset.getId());
+  libBinding = uac.LibBinding.getInstance();
+  libBinding.call('uac_save_to_file', filename, dataset);
 end

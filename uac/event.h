@@ -22,7 +22,7 @@ struct Event : urx::detail::Event<TransmitSetup, ReceiveSetup> {
 
   bool operator!=(const Event& other) const { return !operator==(other); }
 
-  urx::DoubleNan time_offset;
+  urx::DoubleNan time_offset{0};
 
   std::optional<TriggerIn> trigger_in;
 

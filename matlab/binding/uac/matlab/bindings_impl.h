@@ -3,8 +3,10 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <unordered_map>
@@ -14,10 +16,66 @@
 
 #include <urx/matlab/bindings_decl.h>
 
+#include <uac/group.h>
 #include <uac/hw_config.h>
+#include <uac/igroup.h>
 #include <uac/matlab/bindings.h>
+#include <uac/super_group.h>
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
+
+#ifdef _WIN32
+#define SECURE_COPY(output, str, size) strncpy_s(output, size, str, sizeof(str))
+#else
+#define SECURE_COPY(output, str, size) strncpy(output, str, size)
+#endif
+
+#define _IGROUP_TRUE_TYPE_IMPL_COMPUTE_IGROUP(type, member, max_len) \
+  do {                                                               \
+    igroup = getIGroupPtr(object->member);                           \
+    if (dynamic_cast<uac::SuperGroup *>(igroup)) {                   \
+      SECURE_COPY(output, "uac.SuperGroup", max_len - 1);            \
+    }                                                                \
+    if (dynamic_cast<uac::Group *>(igroup)) {                        \
+      SECURE_COPY(output, "uac.Group", max_len - 1);                 \
+    }                                                                \
+    return output;                                                   \
+  } while (0)
+
+#define _IGROUP_TRUE_TYPE_IMPL(snake, type, member)                                              \
+  char *CONCAT4(snake, raw, member, true_type)(void *this_ptr, char *output, int max_len) {      \
+    type *object = static_cast<type *>(this_ptr);                                                \
+    uac::IGroup *igroup;                                                                         \
+                                                                                                 \
+    _IGROUP_TRUE_TYPE_IMPL_COMPUTE_IGROUP(type, member, max_len);                                \
+  }                                                                                              \
+  char *CONCAT4(snake, weak, member, true_type)(void *this_ptr, char *output, int max_len) {     \
+    type *object = static_cast<std::weak_ptr<type> *>(this_ptr)->lock().get();                   \
+    uac::IGroup *igroup;                                                                         \
+                                                                                                 \
+    _IGROUP_TRUE_TYPE_IMPL_COMPUTE_IGROUP(type, member, max_len);                                \
+  }                                                                                              \
+  char *CONCAT4(snake, shared, member, true_type)(void *this_ptr, char *output, int max_len) {   \
+    type *object = static_cast<std::shared_ptr<type> *>(this_ptr)->get();                        \
+    uac::IGroup *igroup;                                                                         \
+                                                                                                 \
+    _IGROUP_TRUE_TYPE_IMPL_COMPUTE_IGROUP(type, member, max_len);                                \
+  }                                                                                              \
+  char *CONCAT4(snake, optional, member, true_type)(void *this_ptr, char *output, int max_len) { \
+    std::optional<type> &object_opt = *static_cast<std::optional<type> *>(this_ptr);             \
+    if (!object_opt) {                                                                           \
+      output[0] = '\0';                                                                          \
+      return output;                                                                             \
+    }                                                                                            \
+    type *object = &*object_opt;                                                                 \
+    uac::IGroup *igroup;                                                                         \
+                                                                                                 \
+    _IGROUP_TRUE_TYPE_IMPL_COMPUTE_IGROUP(type, member, max_len);                                \
+  }
+
+#define IGROUP_TRUE_TYPE_NS_IMPL(ns, name, member) \
+  _IGROUP_TRUE_TYPE_IMPL(CONCAT2(ns, name), CONCAT_NS(ns, name), member)
+#define IGROUP_TRUE_TYPE_IMPL(name, member) _IGROUP_TRUE_TYPE_IMPL(name, name, member)
 
 #define _HW_CONFIG_IMPL(snake, type)                                                               \
   void *CONCAT2(snake, new)(void) {                                                                \
@@ -62,94 +120,94 @@
         *static_cast<std::shared_ptr<type> *>(other_ptr);                                          \
   }                                                                                                \
   const char *CONCAT4(snake, get, key, raw)(void *this_ptr, uint64_t i) {                          \
-    auto it = static_cast<type *>(this_ptr) -> values.begin();                                     \
+    auto it = static_cast<type *>(this_ptr)->values.begin();                                       \
     std::advance(it, i);                                                                           \
     return it->first.c_str();                                                                      \
   }                                                                                                \
   const char *CONCAT4(snake, get, key, shared)(void *this_ptr, uint64_t i) {                       \
-    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr)) -> values.begin();                 \
+    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr))->values.begin();                   \
     std::advance(it, i);                                                                           \
     return it->first.c_str();                                                                      \
   }                                                                                                \
   const void *CONCAT4(snake, get, value, raw)(void *this_ptr, uint64_t i) {                        \
-    auto it = static_cast<type *>(this_ptr) -> values.begin();                                     \
+    auto it = static_cast<type *>(this_ptr)->values.begin();                                       \
     std::advance(it, i);                                                                           \
     return variant_to_void(it->second);                                                            \
   }                                                                                                \
   const void *CONCAT4(snake, get, value, shared)(void *this_ptr, uint64_t i) {                     \
-    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr)) -> values.begin();                 \
+    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr))->values.begin();                   \
     std::advance(it, i);                                                                           \
     return variant_to_void(it->second);                                                            \
   }                                                                                                \
   const char *CONCAT5(snake, get, value, string, raw)(void *this_ptr, uint64_t i) {                \
-    auto it = static_cast<type *>(this_ptr) -> values.begin();                                     \
+    auto it = static_cast<type *>(this_ptr)->values.begin();                                       \
     std::advance(it, i);                                                                           \
     return std::get<std::string>(it->second).c_str();                                              \
   }                                                                                                \
   const char *CONCAT5(snake, get, value, string, shared)(void *this_ptr, uint64_t i) {             \
-    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr)) -> values.begin();                 \
+    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr))->values.begin();                   \
     std::advance(it, i);                                                                           \
     return std::get<std::string>(it->second).c_str();                                              \
   }                                                                                                \
   uint64_t CONCAT5(snake, get, size, vec_string, raw)(void *this_ptr, uint64_t i) {                \
-    auto it = static_cast<type *>(this_ptr) -> values.begin();                                     \
+    auto it = static_cast<type *>(this_ptr)->values.begin();                                       \
     std::advance(it, i);                                                                           \
     return std::get<std::vector<std::string>>(it->second).size();                                  \
   }                                                                                                \
   uint64_t CONCAT5(snake, get, size, vec_string, shared)(void *this_ptr, uint64_t i) {             \
-    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr)) -> values.begin();                 \
+    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr))->values.begin();                   \
     std::advance(it, i);                                                                           \
     return std::get<std::vector<std::string>>(it->second).size();                                  \
   }                                                                                                \
   const char *CONCAT5(snake, get, value, vec_string, raw)(void *this_ptr, uint64_t i,              \
                                                           uint64_t j) {                            \
-    auto it = static_cast<type *>(this_ptr) -> values.begin();                                     \
+    auto it = static_cast<type *>(this_ptr)->values.begin();                                       \
     std::advance(it, i);                                                                           \
     return std::get<std::vector<std::string>>(it->second)[j].c_str();                              \
   }                                                                                                \
   const char *CONCAT5(snake, get, value, vec_string, shared)(void *this_ptr, uint64_t i,           \
                                                              uint64_t j) {                         \
-    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr)) -> values.begin();                 \
+    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr))->values.begin();                   \
     std::advance(it, i);                                                                           \
     return std::get<std::vector<std::string>>(it->second)[j].c_str();                              \
   }                                                                                                \
   uint64_t CONCAT5(snake, get, size, vec_struct, raw)(void *this_ptr, uint64_t i) {                \
-    auto it = static_cast<type *>(this_ptr) -> values.begin();                                     \
+    auto it = static_cast<type *>(this_ptr)->values.begin();                                       \
     std::advance(it, i);                                                                           \
     return std::get<std::vector<type>>(it->second).size();                                         \
   }                                                                                                \
   uint64_t CONCAT5(snake, get, size, vec_struct, shared)(void *this_ptr, uint64_t i) {             \
-    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr)) -> values.begin();                 \
+    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr))->values.begin();                   \
     std::advance(it, i);                                                                           \
     return std::get<std::vector<type>>(it->second).size();                                         \
   }                                                                                                \
   void *CONCAT5(snake, get, value, vec_struct, raw)(void *this_ptr, uint64_t i, uint64_t j) {      \
-    auto it = static_cast<type *>(this_ptr) -> values.begin();                                     \
+    auto it = static_cast<type *>(this_ptr)->values.begin();                                       \
     std::advance(it, i);                                                                           \
     return &std::get<std::vector<type>>(it->second)[j];                                            \
   }                                                                                                \
   void *CONCAT5(snake, get, value, vec_struct, shared)(void *this_ptr, uint64_t i, uint64_t j) {   \
-    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr)) -> values.begin();                 \
+    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr))->values.begin();                   \
     std::advance(it, i);                                                                           \
     return &std::get<std::vector<type>>(it->second)[j];                                            \
   }                                                                                                \
   uint32_t CONCAT5(snake, get, value, size, raw)(void *this_ptr, uint64_t i) {                     \
-    auto it = static_cast<type *>(this_ptr) -> values.begin();                                     \
+    auto it = static_cast<type *>(this_ptr)->values.begin();                                       \
     std::advance(it, i);                                                                           \
     return variant_to_size(it->second);                                                            \
   }                                                                                                \
   uint32_t CONCAT5(snake, get, value, size, shared)(void *this_ptr, uint64_t i) {                  \
-    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr)) -> values.begin();                 \
+    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr))->values.begin();                   \
     std::advance(it, i);                                                                           \
     return variant_to_size(it->second);                                                            \
   }                                                                                                \
   uint32_t CONCAT3(snake, get_type, raw)(void *this_ptr, uint64_t i) {                             \
-    auto it = static_cast<type *>(this_ptr) -> values.begin();                                     \
+    auto it = static_cast<type *>(this_ptr)->values.begin();                                       \
     std::advance(it, i);                                                                           \
     return variant_to_type(it->second);                                                            \
   }                                                                                                \
   uint32_t CONCAT3(snake, get_type, shared)(void *this_ptr, uint64_t i) {                          \
-    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr)) -> values.begin();                 \
+    auto it = (*static_cast<std::shared_ptr<type> *>(this_ptr))->values.begin();                   \
     std::advance(it, i);                                                                           \
     return variant_to_type(it->second);                                                            \
   }                                                                                                \
@@ -199,7 +257,7 @@
   }                                                                                                \
   void CONCAT5(snake, append, hwconfig, raw, raw)(void *hw_config, const char *name,               \
                                                   const void *value) {                             \
-    auto &dict = static_cast<type *>(hw_config) -> values;                                         \
+    auto &dict = static_cast<type *>(hw_config)->values;                                           \
     if (dict.find(name) == dict.end()) {                                                           \
       dict[name] = std::vector<type>();                                                            \
     }                                                                                              \
@@ -207,7 +265,7 @@
   }                                                                                                \
   void CONCAT5(snake, append, hwconfig, raw, shared)(void *hw_config, const char *name,            \
                                                      const void *value) {                          \
-    auto &dict = static_cast<type *>(hw_config) -> values;                                         \
+    auto &dict = static_cast<type *>(hw_config)->values;                                           \
     if (dict.find(name) == dict.end()) {                                                           \
       dict[name] = std::vector<type>();                                                            \
     }                                                                                              \
@@ -216,7 +274,7 @@
   }                                                                                                \
   void CONCAT5(snake, append, hwconfig, shared, raw)(void *hw_config, const char *name,            \
                                                      const void *value) {                          \
-    auto &dict = (*static_cast<std::shared_ptr<type> *>(hw_config)) -> values;                     \
+    auto &dict = (*static_cast<std::shared_ptr<type> *>(hw_config))->values;                       \
     if (dict.find(name) == dict.end()) {                                                           \
       dict[name] = std::vector<type>();                                                            \
     }                                                                                              \
@@ -224,7 +282,7 @@
   }                                                                                                \
   void CONCAT5(snake, append, hwconfig, shared, shared)(void *hw_config, const char *name,         \
                                                         const void *value) {                       \
-    auto &dict = (*static_cast<std::shared_ptr<type> *>(hw_config)) -> values;                     \
+    auto &dict = (*static_cast<std::shared_ptr<type> *>(hw_config))->values;                       \
     if (dict.find(name) == dict.end()) {                                                           \
       dict[name] = std::vector<type>();                                                            \
     }                                                                                              \

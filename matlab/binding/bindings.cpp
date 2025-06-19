@@ -18,6 +18,7 @@
 #include <urx/matlab/bindings_impl.h>
 #include <urx/probe.h>
 #include <urx/transform.h>
+#include <urx/utils/type_container.h>
 #include <urx/vector.h>
 #include <urx/wave.h>
 
@@ -30,6 +31,7 @@
 #include <uac/excitation.h>
 #include <uac/group.h>
 #include <uac/hw_config.h>
+#include <uac/igroup.h>
 #include <uac/impulse_response.h>  // IWYU pragma: keep
 #include <uac/matlab/bindings.h>
 #include <uac/matlab/bindings_impl.h>
@@ -49,11 +51,32 @@
 #include <uac/utils/io/writer.h>
 #endif
 
+namespace {
+
+template <typename Container>
+uac::IGroup *getIGroupPtr(const Container &container) {
+  if constexpr (urx::utils::TypeContainer<Container>::VALUE ==
+                urx::utils::ContainerType::SHARED_PTR) {
+    return container.get();
+  } else if constexpr (urx::utils::TypeContainer<Container>::VALUE ==
+                       urx::utils::ContainerType::WEAK_PTR) {
+    return container.lock().get();
+  } else if constexpr (urx::utils::TypeContainer<Container>::VALUE ==
+                       urx::utils::ContainerType::OPTIONAL) {
+    return container ? &(*container) : nullptr;
+  } else {
+    throw std::runtime_error(__FUNCTION__);
+  }
+}
+
+}  // namespace
+
 // NOLINTBEGIN(cppcoreguidelines-owning-memory)
 
 URX_MATLAB_ACQUISITION_IMPL(uac);
 OBJECT_ACCESSOR_NS_IMPL(uac, Acquisition, super_groups);
 OBJECT_ACCESSOR_NS_IMPL(uac, Acquisition, initial_group);
+IGROUP_TRUE_TYPE_NS_IMPL(uac, Acquisition, initial_group);
 OBJECT_ACCESSOR_NS_IMPL(uac, Acquisition, time_offset);
 OBJECT_ACCESSOR_NS_IMPL(uac, Acquisition, trigger_in);
 OBJECT_ACCESSOR_NS_IMPL(uac, Acquisition, trigger_out);
@@ -64,6 +87,7 @@ URX_MATLAB_DATASET_IMPL(uac);
 OBJECT_NS_IMPL(uac, DestinationLink);
 OBJECT_ACCESSOR_NS_IMPL(uac, DestinationLink, trigger);
 OBJECT_ACCESSOR_NS_IMPL(uac, DestinationLink, destination);
+IGROUP_TRUE_TYPE_NS_IMPL(uac, DestinationLink, destination);
 
 URX_MATLAB_ELEMENT_GEOMETRY_IMPL(uac);
 
@@ -103,6 +127,7 @@ OBJECT_ACCESSOR_NS_IMPL(uac, SuperGroup, destinations);
 OBJECT_ACCESSOR_NS_IMPL(uac, SuperGroup, period);
 OBJECT_ACCESSOR_NS_IMPL(uac, SuperGroup, hw_config);
 OBJECT_ACCESSOR_NS_IMPL(uac, SuperGroup, initial_group);
+IGROUP_TRUE_TYPE_NS_IMPL(uac, SuperGroup, initial_group);
 OBJECT_ACCESSOR_NS_IMPL(uac, SuperGroup, description);
 
 URX_MATLAB_TRANSFORM_IMPL(uac);

@@ -33,7 +33,7 @@ All CMake files will be installed in `INSTALL_PATH/lib/cmake/Uac-XXXYYY/` with:
 
 #### Configuration
 
-First, you need to get Uac package with `find_package`.
+First, you need to get Uac package with `find_package`. If package is not found, set `Uac_DIR=INSTALL_PATH/lib/cmake/Urx-XXXYYY`.
 
 ```cmake
 find_package(Uac REQUIRED)
@@ -162,7 +162,7 @@ Did not find installed compiler 'Microsoft Visual C++ 2017'.
 Did not find installed compiler 'MinGW64 Compiler (C++)'.
 Error using mex
 No supported compiler was found. You can install the freely
-Installed MinGW-w64 C/C++ compiler; see Install MinGW-w64
+available MinGW-w64 C/C++ compiler; see Install MinGW-w64
 Compiler. For more options, visit
 https://www.mathworks.com/support/compilers.
 ```
@@ -213,7 +213,7 @@ urx.LibBinding.getInstance([path to libUrxMatlabBinding.so], [path to INSTALL_PA
 uac.LibBinding.getInstance([path to libUacMatlabBinding.so], [path to INSTALL_PATH/include/Uac-XXXYYY/uac/matlab/bindings.h], {[path to INSTALL_PATH/include/Urx-XXXYYY], [path to INSTALL_PATH/include/Uac-XXXYYY]}, {});
 ```
 
-⚠ When invoking `urx.LibBinding.getInstance` the first time, environment variable `HDF5_DISABLE_VERSION_CHECK` is set. MATLAB have it's own version of HDF5 library. Under Linux it will conflict with the one from Uac.
+⚠ When invoking `uac.LibBinding.getInstance` the first time, environment variable `HDF5_DISABLE_VERSION_CHECK` is set. MATLAB have it's own version of HDF5 library. Under Linux it will conflict with the one from Uac.
 
 If you try to use `uac.saveToFile(...)` or `uac.loadFromFile(...)` without setting `HDF5_DISABLE_VERSION_CHECK`, MATLAB will crash with error: `Headers are 1.8.23, library is 1.8.12`.
 
@@ -351,7 +351,7 @@ See `.gitlab-ci.yml` file for various examples.
 Requirements:
 
   * [git](https://gitforwindows.org/),
-  * [cmake v3.28](https://gitforwindows.org/),
+  * [cmake v3.28 minimum](https://gitforwindows.org/),
   * [Python v3.8 minimum](https://www.python.org/downloads/),
 
 Under Windows, you need to explicitly set Visual Studio generator.
@@ -412,7 +412,7 @@ Be sure to use a vcpkg triplet with the same shared / static link option. For ex
 
 `vcpkg` is a package manager. You first need to clone it with `git clone https://github.com/microsoft/vcpkg.git`.
 
-Also, be sure that submodule `vcpkg-registry` is initialized with `git submodule update --init --recursive`.
+Also, clone `vcpkg-registry` with `git clone https://github.com/moduleus/vcpkg-registry.git`.
 
 Then pass the arguments below. ⚠ If you use `cmake-gui`, be sure to set these variables BEFORE running configure once. Otherwise, you need to reset cache.
 
@@ -499,7 +499,7 @@ Example:
 ```sh
 python.exe -m pip install .
 --config-settings="--global-option=CMAKE_TOOLCHAIN_FILE=vcpkg_path/scripts/buildsystems/vcpkg.cmake"
---config-settings="--global-option=cmake_build_type=Release"
+--config-settings="--global-option=cmake_build_type=RelWithDebInfo"
 --config-settings="--global-option=vcpkg_triplet=x64-wsmrep"
 --config-settings="--global-option=-DBUILD_SHARED_LIBS=OFF"
 --config-settings="--global-option=-DWITH_HDF5=ON"

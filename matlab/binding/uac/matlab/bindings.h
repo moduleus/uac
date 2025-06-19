@@ -39,6 +39,7 @@ URX_MATLAB_EXPORT uint64_t get_pointer(void *ptr);
 URX_MATLAB_ACQUISITION_DECL(uac);
 OBJECT_ACCESSOR_NS_DECL(uac, Acquisition, super_groups);
 OBJECT_ACCESSOR_NS_DECL(uac, Acquisition, initial_group);
+IGROUP_TRUE_TYPE_NS_DECL(uac, Acquisition, initial_group);
 OBJECT_ACCESSOR_NS_DECL(uac, Acquisition, time_offset);
 OBJECT_ACCESSOR_NS_DECL(uac, Acquisition, trigger_in);
 OBJECT_ACCESSOR_NS_DECL(uac, Acquisition, trigger_out);
@@ -49,6 +50,7 @@ URX_MATLAB_DATASET_DECL(uac);
 OBJECT_NS_DECL(uac, DestinationLink);
 OBJECT_ACCESSOR_NS_DECL(uac, DestinationLink, trigger);
 OBJECT_ACCESSOR_NS_DECL(uac, DestinationLink, destination);
+IGROUP_TRUE_TYPE_NS_DECL(uac, DestinationLink, destination);
 
 URX_MATLAB_ELEMENT_GEOMETRY_DECL(uac);
 
@@ -72,6 +74,8 @@ OBJECT_ACCESSOR_NS_DECL(uac, Group, destinations);
 OBJECT_ACCESSOR_NS_DECL(uac, Group, period);
 OBJECT_ACCESSOR_NS_DECL(uac, Group, hw_config);
 
+IGROUP_TRUE_TYPE_NS_DECL(uac, SuperGroup, initial_group);
+
 URX_MATLAB_IMPULSE_RESPONSE_DECL(uac);
 
 URX_MATLAB_PROBE_DECL(uac);
@@ -88,6 +92,7 @@ OBJECT_ACCESSOR_NS_DECL(uac, SuperGroup, destinations);
 OBJECT_ACCESSOR_NS_DECL(uac, SuperGroup, period);
 OBJECT_ACCESSOR_NS_DECL(uac, SuperGroup, hw_config);
 OBJECT_ACCESSOR_NS_DECL(uac, SuperGroup, initial_group);
+IGROUP_TRUE_TYPE_NS_DECL(uac, SuperGroup, initial_group);
 OBJECT_ACCESSOR_NS_DECL(uac, SuperGroup, description);
 
 URX_MATLAB_TRANSFORM_DECL(uac);

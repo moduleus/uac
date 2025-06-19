@@ -32,27 +32,6 @@ endif()
 
 # Build python binary distribuable.
 if(NOT CALL_FROM_SETUP_PY AND WITH_PYTHON_WHL)
-  # Generate uac-0.6.26-cp311-cp311-win_amd64.whl
-  set(PYTHON_MODULE_UAC_OUTPUT
-      "${PYPI_UAC_PACKAGE}-${CMAKE_PROJECT_VERSION}-cp${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}-cp${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}$<$<CONFIG:Debug>:d>"
-  )
-  if(WIN32)
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(PYTHON_MODULE_UAC_OUTPUT "${PYTHON_MODULE_UAC_OUTPUT}-win_amd64.whl")
-    else()
-      set(PYTHON_MODULE_UAC_OUTPUT "${PYTHON_MODULE_UAC_OUTPUT}-win32.whl")
-    endif()
-  elseif(UNIX AND NOT APPLE)
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(PYTHON_MODULE_UAC_OUTPUT
-          "${PYTHON_MODULE_UAC_OUTPUT}-linux_x86_64.whl")
-    else()
-      message(FATAL_ERROR "Unsupported architecture for python output.")
-    endif()
-  else()
-    message(FATAL_ERROR "Unsupported architecture for python output.")
-  endif()
-
   set(ENV_COMMAND ${CMAKE_COMMAND} -E env CFLAGS=$ENV{CFLAGS}
                   CXXFLAGS=$ENV{CXXFLAGS})
 
@@ -69,6 +48,7 @@ if(NOT CALL_FROM_SETUP_PY AND WITH_PYTHON_WHL)
       --config-settings=--global-option=DISABLE_VCPKG=ON
       --config-settings=--global-option=cmake_build_type=$<CONFIG>
       --config-settings=--global-option=-DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+      --config-settings=--global-option=-DCRT_SHARED_LIBS=${CRT_SHARED_LIBS}
       --config-settings=--global-option=-DWITH_HDF5=${WITH_HDF5}
       --config-settings=--global-option=-DCatch2_DIR=${Catch2_DIR}
       --config-settings=--global-option=-DHDF5_DIR=${HDF5_DIR}
@@ -111,7 +91,14 @@ if(NOT CALL_FROM_SETUP_PY AND WITH_PYTHON_WHL)
   if(Python3_EXECUTABLE_IS_DEBUG)
     set(Python3_EXECUTABLE_EXEC ${CMAKE_COMMAND} -E true)
   else()
-    set(Python3_EXECUTABLE_EXEC ${ENV_COMMAND} "${Python3_EXECUTABLE}")
+    if(Python3_EXECUTABLE_DEBUG_IS_DEBUG)
+      set(Python3_EXECUTABLE_EXEC
+          ${ENV_COMMAND}
+          "$<IF:$<CONFIG:Debug>,${Python3_EXECUTABLE_DEBUG},${Python3_EXECUTABLE}>"
+      )
+    else()
+      set(Python3_EXECUTABLE_EXEC ${ENV_COMMAND} "${Python3_EXECUTABLE}")
+    endif()
   endif()
   if(NOT Python3_EXECUTABLE_DEBUG_IS_DEBUG)
     set(Python3_EXECUTABLE_DEBUG_EXEC ${CMAKE_COMMAND} -E true)
@@ -136,18 +123,65 @@ if(NOT CALL_FROM_SETUP_PY AND WITH_PYTHON_WHL)
     COMMAND_EXPAND_LISTS VERBATIM
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-  if(NOT Python3_EXECUTABLE_IS_DEBUG)
-    install(
-      FILES
-        "$<$<NOT:$<CONFIG:Debug>>:${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_UAC_OUTPUT}>"
-      DESTINATION "share/${INSTALL_NAME}")
+  # May generate uac-0.6.26-cp311-cp311d-win_amd64.whl
+  #              ultrasound_acquisition_configuration-1.2.0-pp310-pypy310_pp73-linux_x86_64.whl
+  execute_process(
+    COMMAND
+      ${ENV_COMMAND} ${Python3_EXECUTABLE} -c
+      "from packaging import tags; tag = next(tags.sys_tags()); print(str(tag))"
+    OUTPUT_VARIABLE PYTHON_TAG_RELEASE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE PYTHON_TAG_RESULT)
+  if(PYTHON_TAG_RESULT OR PYTHON_TAG_RELEASE STREQUAL "")
+    message(FATAL_ERROR "Failed to get release ABI tags")
   endif()
-  if(Python3_EXECUTABLE_DEBUG_IS_DEBUG)
-    install(
-      FILES
-        "$<$<CONFIG:Debug>:${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_UAC_OUTPUT}>"
-      DESTINATION "share/${INSTALL_NAME}")
+
+  if(NOT ${Python3_EXECUTABLE_DEBUG} STREQUAL "")
+    execute_process(
+      COMMAND
+        ${Python3_EXECUTABLE_DEBUG_EXEC} -c
+        "from packaging import tags; tag = next(tags.sys_tags()); print(str(tag))"
+      OUTPUT_VARIABLE PYTHON_TAG_DEBUG
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      RESULT_VARIABLE PYTHON_TAG_RESULT)
+    if(PYTHON_TAG_RESULT OR PYTHON_TAG_DEBUG STREQUAL "")
+      message(FATAL_ERROR "Failed to get debug ABI tags")
+    endif()
   endif()
+
+  if(WIN32)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set(PYTHON_TAG_POSTFIX "win_amd64.whl")
+    else()
+      set(PYTHON_TAG_POSTFIX "win32.whl")
+    endif()
+  elseif(UNIX AND NOT APPLE)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set(PYTHON_TAG_POSTFIX "linux_x86_64.whl")
+    else()
+      message(FATAL_ERROR "Unsupported architecture for python output.")
+    endif()
+  else()
+    message(FATAL_ERROR "Unsupported architecture for python output.")
+  endif()
+
+  if(NOT ${Python3_EXECUTABLE_DEBUG} STREQUAL "")
+    set(PYTHON_MODULE_UAC_OUTPUT_DEBUG
+        "${PYPI_UAC_PACKAGE}-${CMAKE_PROJECT_VERSION}-${PYTHON_TAG_DEBUG}-${PYTHON_TAG_POSTFIX}"
+    )
+    install(
+      FILES "${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_UAC_OUTPUT_DEBUG}"
+      DESTINATION "share/${INSTALL_NAME}"
+      OPTIONAL)
+  endif()
+
+  set(PYTHON_MODULE_UAC_OUTPUT_RELEASE
+      "${PYPI_UAC_PACKAGE}-${CMAKE_PROJECT_VERSION}-${PYTHON_TAG_RELEASE}-${PYTHON_TAG_POSTFIX}"
+  )
+  install(
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_UAC_OUTPUT_RELEASE}"
+    DESTINATION "share/${INSTALL_NAME}"
+    OPTIONAL)
 endif()
 
 install(

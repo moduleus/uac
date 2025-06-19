@@ -35,9 +35,6 @@ endif()
 option(WITH_VCPKG_URX "Use URX from VCPKG" OFF)
 if(WITH_VCPKG_URX)
   list(APPEND VCPKG_MANIFEST_FEATURES ${URX_VCPKG_DEPENDENCY})
-  if(WITH_PYTHON_WHL)
-    list(APPEND VCPKG_MANIFEST_FEATURES "urx-python-wheel")
-  endif()
 endif()
 set(URX_SRC
     ""
@@ -47,9 +44,17 @@ if(DEFINED Python3_EXECUTABLE)
   set(ENV{VCPKG_Python3_EXECUTABLE} ${Python3_EXECUTABLE})
 endif()
 
+# Windows only
+option(CRT_SHARED_LIBS "Build using CRT shared libraries" ON)
+
+if(NOT CRT_SHARED_LIBS)
+  cmake_policy(SET CMP0091 NEW)
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
+
 project(
   Uac
-  VERSION 1.1.0
+  VERSION 1.2.0
   LANGUAGES C CXX
   DESCRIPTION "Ultrasound Acquisition Configuration format C++ implementation")
 
@@ -84,6 +89,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_LINK_WHAT_YOU_USE ON)
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+
 option(ENABLE_PCH "Build with PCH" ON)
 
 add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
@@ -220,7 +226,7 @@ if(WITH_PYTHON AND (NOT TARGET pybind11::pybind11 OR NOT TARGET Python3::Module
   else()
     set(Python3_EXECUTABLE_IS_DEBUG OFF)
 
-    unset(Python3_EXECUTABLE_DEBUG_IS_DEBUG)
+    set(Python3_EXECUTABLE_DEBUG_IS_DEBUG OFF)
 
     if(WIN32)
       if(NOT "${Python3_EXECUTABLE}" MATCHES ".*_d\.exe$")
@@ -235,6 +241,10 @@ if(WITH_PYTHON AND (NOT TARGET pybind11::pybind11 OR NOT TARGET Python3::Module
 
     find_program(Python3_EXECUTABLE_DEBUG_NEW_REAL
                  ${Python3_EXECUTABLE_DEBUG_TMP} NO_DEFAULT_PATH)
+    if(NOT Python3_EXECUTABLE_DEBUG_NEW_REAL
+       AND EXISTS ${Python3_EXECUTABLE_DEBUG_TMP})
+      set(Python3_EXECUTABLE_DEBUG_NEW_REAL ${Python3_EXECUTABLE_DEBUG_TMP})
+    endif()
     if(Python3_EXECUTABLE_DEBUG_NEW_REAL)
       execute_process(
         COMMAND "${Python3_EXECUTABLE_DEBUG_NEW_REAL}" "-c"
@@ -256,10 +266,6 @@ if(WITH_PYTHON AND (NOT TARGET pybind11::pybind11 OR NOT TARGET Python3::Module
       "Python3_EXECUTABLE_DEBUG: ${Python3_EXECUTABLE_DEBUG} is debug ? ${Python3_EXECUTABLE_DEBUG_IS_DEBUG}"
   )
 
-  if(Python3_EXECUTABLE_DEBUG_IS_DEBUG)
-    set(Python3_EXECUTABLE
-        $<IF:$<CONFIG:Debug>,${Python3_EXECUTABLE_DEBUG},${Python3_EXECUTABLE}>)
-  endif()
   set_property(
     TARGET pybind11::pybind11
     APPEND

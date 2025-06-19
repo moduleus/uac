@@ -1,0 +1,4 @@
+[submodule "vcpkg-registry"]
+	path = vcpkg-registry
+	url = https://github.com/moduleus/vcpkg-registry.git
+	branch = main

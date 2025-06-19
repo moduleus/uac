@@ -22,6 +22,8 @@ classdef CreateUff < matlab.unittest.TestCase
 
   methods(Test)
     function createUff(testcase)
+      libBinding = uac.LibBinding.getInstance();
+
       dataset = uac.Dataset();
       
       dataset.version.minor = 123;
@@ -187,9 +189,9 @@ classdef CreateUff < matlab.unittest.TestCase
       element1.transform.translation.z = 963;
       % Test empty weak_ptr field
       element1.elementGeometry = probe2.elementGeometries(1);
-      testcase.verifyTrue(uac.LibBinding.getInstance().call('uac_Element_shared_element_geometry_has_data', element1));
+      testcase.verifyTrue(libBinding.call('uac_Element_shared_element_geometry_has_data', element1));
       element1.elementGeometry = uac.ElementGeometry.empty;
-      testcase.verifyFalse(uac.LibBinding.getInstance().call('uac_Element_shared_element_geometry_has_data', element1));
+      testcase.verifyFalse(libBinding.call('uac_Element_shared_element_geometry_has_data', element1));
       element1.impulseResponse = probe2.impulseResponses(2);
       
       element2 = uac.Element();
@@ -394,11 +396,11 @@ classdef CreateUff < matlab.unittest.TestCase
     
       destinationLink1 = uac.DestinationLink();
       destinationLink1.destination = dataset.acquisition.groups(2);
-      testcase.verifyFalse(uac.LibBinding.getInstance().call('uac_DestinationLink_shared_trigger_has_data', destinationLink1));
+      testcase.verifyFalse(libBinding.call('uac_DestinationLink_shared_trigger_has_data', destinationLink1));
       destinationLink1.trigger = uac.TriggerIn();
-      testcase.verifyTrue(uac.LibBinding.getInstance().call('uac_DestinationLink_shared_trigger_has_data', destinationLink1));
+      testcase.verifyTrue(libBinding.call('uac_DestinationLink_shared_trigger_has_data', destinationLink1));
       destinationLink1.trigger = uac.TriggerIn.empty;
-      testcase.verifyFalse(uac.LibBinding.getInstance().call('uac_DestinationLink_shared_trigger_has_data', destinationLink1));
+      testcase.verifyFalse(libBinding.call('uac_DestinationLink_shared_trigger_has_data', destinationLink1));
     
       destinationLink2 = uac.DestinationLink();
       destinationLink2.destination = dataset.acquisition.groups(1);
@@ -422,6 +424,7 @@ classdef CreateUff < matlab.unittest.TestCase
     
       dataset.acquisition.superGroups = [superGroup];
       dataset.acquisition.initialGroup = superGroup;
+      testcase.verifyTrue(dataset.acquisition.initialGroup.repetitionCount == superGroup.repetitionCount);
       dataset.acquisition.timeOffset = 11;
       dataset.acquisition.triggerIn = uac.TriggerIn();
       dataset.acquisition.triggerIn.channel = 'Channel2';
@@ -544,6 +547,8 @@ classdef CreateUff < matlab.unittest.TestCase
       testcase.verifyEqual(datasetUrx.acquisition.description, dataset.acquisition.description);
 
       uacLoaded = uac.loadFromFile('test.uac');
+
+      testcase.verifyTrue(uacLoaded.acquisition.initialGroup.repetitionCount == superGroup.repetitionCount);
 
       delete 'test.uac'
     end

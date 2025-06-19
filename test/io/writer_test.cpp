@@ -1,4 +1,6 @@
 ﻿
+#include "io.h"
+
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -7,7 +9,6 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "io.h"
 #include <urx/dataset.h>
 #include <urx/utils/exception.h>
 

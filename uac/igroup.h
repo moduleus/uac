@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <utility>
 #include <vector>
 
 #include <urx/detail/double_nan.h>
@@ -11,20 +12,24 @@
 #include <uac/detail/compare.h>  // IWYU pragma: keep
 #include <uac/hw_config.h>
 #include <uac/trigger.h>
-#include <uac/uac.h>
 
 namespace uac {
 
 struct DestinationLink;  // IWYU pragma: keep
 
 struct IGroup {
-  virtual bool operator==(const IGroup& other) const { return secureComparison(other, 0); }
+  virtual bool operator==(const IGroup& other) const {
+    std::vector<std::pair<const void*, const void*>> already_compared_obj;
+    return secureComparison(other, already_compared_obj);
+  }
 
   virtual ~IGroup() = 0;
 
   bool operator!=(const IGroup& other) const { return !operator==(other); }
 
-  bool secureComparison(const IGroup& other, int recursion) const;
+  bool secureComparison(
+      const IGroup& other,
+      std::vector<std::pair<const void*, const void*>>& already_compared_obj) const;
 
   urx::DoubleNan time_offset{0};
 
@@ -49,17 +54,32 @@ struct IGroup {
 namespace uac {
 
 // NOLINTNEXTLINE(misc-no-recursion)
-inline bool IGroup::secureComparison(const IGroup& other, int recursion) const {
-  return time_offset == other.time_offset && trigger_in == other.trigger_in &&
-         trigger_out == other.trigger_out && repetition_count == other.repetition_count &&
-         (recursion >= MAX_RECURSION ||
-          std::equal(destinations.cbegin(), destinations.cend(), other.destinations.cbegin(),
-                     other.destinations.cend(),
-                     // NOLINTNEXTLINE(misc-no-recursion)
-                     [recursion](const DestinationLink& dl1, const DestinationLink& dl2) {
-                       return dl1.secureComparison(dl2, recursion + 1);
-                     })) &&
-         period == other.period && hw_config == other.hw_config;
+inline bool IGroup::secureComparison(
+    const IGroup& other,
+    std::vector<std::pair<const void*, const void*>>& already_compared_obj) const {
+  const std::pair<const void*, const void*> comparison_pair(static_cast<const void*>(this),
+                                                            static_cast<const void*>(&other));
+  const std::pair<const void*, const void*> comparison_pair_miror(static_cast<const void*>(&other),
+                                                                  static_cast<const void*>(this));
+
+  const bool eq_res = time_offset == other.time_offset && trigger_in == other.trigger_in &&
+                      trigger_out == other.trigger_out &&
+                      repetition_count == other.repetition_count && period == other.period &&
+                      hw_config == other.hw_config;
+  if (std::find_if(already_compared_obj.begin(), already_compared_obj.end(),
+                   [&comparison_pair, &comparison_pair_miror](const auto& it) {
+                     return it == comparison_pair || it == comparison_pair_miror;
+                   }) == already_compared_obj.end()) {
+    already_compared_obj.push_back(comparison_pair);
+    return eq_res && (std::equal(destinations.cbegin(), destinations.cend(),
+                                 other.destinations.cbegin(), other.destinations.cend(),
+                                 // NOLINTNEXTLINE(misc-no-recursion)
+                                 [&already_compared_obj](const DestinationLink& dl1,
+                                                         const DestinationLink& dl2) {
+                                   return dl1.secureComparison(dl2, already_compared_obj);
+                                 }));
+  }
+  return eq_res;
 }
 
 inline IGroup::~IGroup() = default;

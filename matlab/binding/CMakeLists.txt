@@ -52,25 +52,15 @@ install(
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 # Generate the MATLAB toolbox
-configure_file(windows.prj.in windows.prj @ONLY)
+configure_file(uac.prj.in uac.prj @ONLY)
 file(
   GENERATE
-  OUTPUT "$<TARGET_FILE_DIR:UacMatlabBinding>/windows-$<CONFIG>.prj"
-  INPUT "${CMAKE_CURRENT_BINARY_DIR}/windows.prj")
+  OUTPUT "$<TARGET_FILE_DIR:UacMatlabBinding>/uac-$<CONFIG>.prj"
+  INPUT "${CMAKE_CURRENT_BINARY_DIR}/uac.prj")
 set_property(
   DIRECTORY
   APPEND
-  PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/windows.prj")
-
-configure_file(linux.prj.in linux.prj @ONLY)
-file(
-  GENERATE
-  OUTPUT "$<TARGET_FILE_DIR:UacMatlabBinding>/linux-$<CONFIG>.prj"
-  INPUT "${CMAKE_CURRENT_BINARY_DIR}/linux.prj")
-set_property(
-  DIRECTORY
-  APPEND
-  PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/linux.prj")
+  PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/uac.prj")
 
 add_custom_command(
   TARGET UacMatlabBinding

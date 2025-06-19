@@ -14,6 +14,19 @@
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
 
+#define _IGROUP_TRUE_TYPE_DECL(snake, member)                                                     \
+  URX_MATLAB_EXPORT char *CONCAT4(snake, raw, member, true_type)(void *this_ptr, char *output,    \
+                                                                 int max_len);                    \
+  URX_MATLAB_EXPORT char *CONCAT4(snake, weak, member, true_type)(void *this_ptr, char *output,   \
+                                                                  int max_len);                   \
+  URX_MATLAB_EXPORT char *CONCAT4(snake, shared, member, true_type)(void *this_ptr, char *output, \
+                                                                    int max_len);                 \
+  URX_MATLAB_EXPORT char *CONCAT4(snake, optional, member, true_type)(void *this_ptr,             \
+                                                                      char *output, int max_len)
+
+#define IGROUP_TRUE_TYPE_NS_DECL(ns, type, member) _IGROUP_TRUE_TYPE_DECL(CONCAT2(ns, type), member)
+#define IGROUP_TRUE_TYPE_DECL(type, member) _IGROUP_TRUE_TYPE_DECL(type, member)
+
 #define _HW_CONFIG_DECL(name)                                                                     \
   URX_MATLAB_EXPORT void *CONCAT2(name, new)(void);                                               \
   URX_MATLAB_EXPORT void CONCAT2(name, delete)(void *this_ptr);                                   \

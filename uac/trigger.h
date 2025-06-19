@@ -29,7 +29,7 @@ struct TriggerOut {
   bool operator!=(const TriggerOut& other) const { return !operator==(other); }
 
   std::string channel;
-  urx::DoubleNan time_offset;
+  urx::DoubleNan time_offset{0};
   urx::DoubleNan pulse_duration;
   Polarity polarity = Polarity::UNDEFINED;
 };

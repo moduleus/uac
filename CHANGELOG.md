@@ -1,5 +1,33 @@
 # Changelog
 
+## 1.2.0
+
+### C++
+
+#### What's new (improvement)
+
+  * Major refactor of urx reader / writer to merge it in a class.
+
+  * Speedup recursion detection between DestinationLink and IGroup.
+
+#### Bug fixes
+
+  * Don't lose empty vector in HwConfig.
+
+### MATLAB
+
+#### Bug fixes
+
+  * Every bug fixes in urx v1.2.0
+
+  * Fix fields of inherited classes (IGroup) when they are initialized by `loadFromFile` function.
+
+  * Hide private field in `TransmitSetup` and `Wave` classes.
+
+#### What's new (improvement)
+
+  * Merge Windows and Linux toolbox.
+
 ## 1.1.0
 
 ### C++

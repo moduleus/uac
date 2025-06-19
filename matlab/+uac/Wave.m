@@ -1,5 +1,5 @@
 classdef Wave < uac.Object
-  properties (Access = public)
+  properties (Access = ?urx.Object)
     parametersStd
   end
   properties (Access = public, SetObservable, GetObservable)

@@ -46,7 +46,6 @@
 
 namespace uac::utils::io {
 
-using urx::utils::io::ContainerType;
 using urx::utils::io::MapToSharedPtr;
 using urx::utils::io::nameTypeid;
 
