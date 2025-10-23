@@ -25,11 +25,6 @@ endif(UNIX)
 
 set_target_properties(UacBindingsPython PROPERTIES OUTPUT_NAME "bindings")
 
-if(ENABLE_PCH)
-  target_precompile_headers(UacBindingsPython PRIVATE ${UAC_PCH}
-                            ${UAC_PCH_PYTHON})
-endif()
-
 # Build python binary distribuable.
 if(NOT CALL_FROM_SETUP_PY AND WITH_PYTHON_WHL)
   set(ENV_COMMAND ${CMAKE_COMMAND} -E env CFLAGS=$ENV{CFLAGS}
@@ -61,6 +56,9 @@ if(NOT CALL_FROM_SETUP_PY AND WITH_PYTHON_WHL)
       --config-settings=--global-option=-DCMAKE_AS=${CMAKE_AS}
       --config-settings=--global-option=-DCMAKE_RANLIB=${CMAKE_RANLIB}
       --config-settings=--global-option=-DCMAKE_LINKER_TYPE=${CMAKE_LINKER_TYPE}
+      --config-settings=--global-option=-DSCCACHE=${SCCACHE}
+      --config-settings=--global-option=-DCCACHE=${CCACHE}
+      --config-settings=--global-option=-DSCCACHE_PROGRAM="${SCCACHE_PROGRAM}"
       --wheel-dir
       ${CMAKE_CURRENT_BINARY_DIR}
       --no-clean
@@ -124,7 +122,7 @@ if(NOT CALL_FROM_SETUP_PY AND WITH_PYTHON_WHL)
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
   # May generate uac-0.6.26-cp311-cp311d-win_amd64.whl
-  #              ultrasound_acquisition_configuration-1.2.0-pp310-pypy310_pp73-linux_x86_64.whl
+  # ultrasound_acquisition_configuration-1.2.0-pp310-pypy310_pp73-linux_x86_64.whl
   execute_process(
     COMMAND
       ${ENV_COMMAND} ${Python3_EXECUTABLE} -c

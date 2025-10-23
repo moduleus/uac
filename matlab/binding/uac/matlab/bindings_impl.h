@@ -1,6 +1,7 @@
 #ifndef UAC_LIB_BINDING_IMPL
 #define UAC_LIB_BINDING_IMPL
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -78,13 +79,26 @@
 #define IGROUP_TRUE_TYPE_IMPL(name, member) _IGROUP_TRUE_TYPE_IMPL(name, name, member)
 
 #define _HW_CONFIG_IMPL(snake, type)                                                               \
-  void *CONCAT2(snake, new)(void) {                                                                \
+  void *CONCAT3(snake, new, raw)(void) {                                                           \
     urxIncAllocCount();                                                                            \
-    auto retval = new std::shared_ptr<type>(new type());                                           \
+    auto retval = new type();                                                                      \
     urxGetLog() << reinterpret_cast<size_t>(retval) << " " << __FUNCTION__ << "\n" << std::flush;  \
     return retval;                                                                                 \
   }                                                                                                \
-  void CONCAT2(snake, delete)(void *this_ptr) {                                                    \
+  void *CONCAT3(snake, new, shared)(void) {                                                        \
+    urxIncAllocCount();                                                                            \
+    auto retval = new std::shared_ptr<type>(new type());                                           \
+    urxGetLog() << reinterpret_cast<size_t>(retval) << " "                                         \
+                << reinterpret_cast<size_t>(retval->get()) << " " << __FUNCTION__ << "\n";         \
+    return retval;                                                                                 \
+  }                                                                                                \
+  void CONCAT3(snake, delete, raw)(void *this_ptr) {                                               \
+    urxDecAllocCount();                                                                            \
+    urxGetLog() << reinterpret_cast<size_t>(this_ptr) << " " << __FUNCTION__ << "\n"               \
+                << std::flush;                                                                     \
+    delete static_cast<type *>(this_ptr);                                                          \
+  }                                                                                                \
+  void CONCAT3(snake, delete, shared)(void *this_ptr) {                                            \
     urxDecAllocCount();                                                                            \
     urxGetLog() << reinterpret_cast<size_t>(this_ptr) << " "                                       \
                 << reinterpret_cast<size_t>(static_cast<std::shared_ptr<type> *>(this_ptr)->get()) \

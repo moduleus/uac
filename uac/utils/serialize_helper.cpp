@@ -6,7 +6,7 @@
 #include <urx/impulse_response.h>
 #include <urx/probe.h>
 #include <urx/transform.h>
-#include <urx/utils/io/serialize_helper.h>
+#include <urx/utils/cpp.h>
 #include <urx/vector.h>
 #include <urx/wave.h>
 
@@ -27,11 +27,11 @@
 #include <uac/transform.h>
 #include <uac/transmit_setup.h>
 #include <uac/trigger.h>
-#include <uac/utils/io/serialize_helper.h>
+#include <uac/utils/serialize_helper.h>
 #include <uac/version.h>
 #include <uac/wave.h>
 
-namespace uac::utils::io {
+namespace uac::utils {
 
 #define str(s) #s
 
@@ -76,10 +76,10 @@ getMemberMap() {
             MAP_ROW(Excitation, hw_config)}},
           {nameTypeid<Group>(),
            {MAP_ROW(Group, sampling_type), MAP_ROW(Group, data_type), MAP_ROW(Group, description),
-            MAP_ROW(Group, sound_speed), MAP_ROW(Group, sequence), MAP_ROW(IGroup, time_offset),
-            MAP_ROW(IGroup, trigger_in), MAP_ROW(IGroup, trigger_out),
-            MAP_ROW(IGroup, repetition_count), MAP_ROW(IGroup, destinations),
-            MAP_ROW(IGroup, period), MAP_ROW(IGroup, hw_config)}},
+            MAP_ROW(Group, sound_speed), MAP_ROW(Group, sequence), MAP_ROW(Group, time_offset),
+            MAP_ROW(Group, trigger_in), MAP_ROW(Group, trigger_out),
+            MAP_ROW(Group, repetition_count), MAP_ROW(Group, destinations), MAP_ROW(Group, period),
+            MAP_ROW(Group, hw_config)}},
           {nameTypeid<IGroup>(),
            {MAP_ROW(IGroup, time_offset), MAP_ROW(IGroup, trigger_in), MAP_ROW(IGroup, trigger_out),
             MAP_ROW(IGroup, repetition_count), MAP_ROW(IGroup, destinations),
@@ -127,4 +127,4 @@ getMemberMap() {
   return member_map;
 }
 
-}  // namespace uac::utils::io
+}  // namespace uac::utils

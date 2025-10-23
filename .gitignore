@@ -5,9 +5,9 @@ CI/
 CI_Android/
 install/
 Temporary/
-doc/
+doc/plantuml
 /*.egg-info/
-test/python/__pycache__/
+__pycache__
 
 # IDE dir
 .vs/
@@ -24,5 +24,9 @@ test/python/__pycache__/
 /urx/
 
 /test/python/urx_python_path.txt
+t4-python.uac
+t8-python.uac
+t9-python.urx
+poetry.lock
 
 *.whl

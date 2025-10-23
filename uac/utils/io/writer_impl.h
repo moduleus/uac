@@ -15,9 +15,8 @@
 #include <H5Cpp.h>
 
 #include <urx/probe.h>
-#include <urx/utils/io/serialize_helper.h>
+#include <urx/utils/cpp.h>
 #include <urx/utils/io/writer_impl.h>
-#include <urx/utils/type_container.h>
 
 #include <uac/dataset.h>
 #include <uac/excitation.h>
@@ -26,7 +25,7 @@
 #include <uac/igroup.h>
 #include <uac/probe.h>
 #include <uac/super_group.h>
-#include <uac/utils/io/serialize_helper.h>
+#include <uac/utils/serialize_helper.h>
 
 namespace uac::utils::io {
 
@@ -39,7 +38,7 @@ class WriterBase
       : urx::utils::io::WriterBase<Dataset, AllTypeInVariant,
                                    WriterBase<Dataset, AllTypeInVariant, Derived>>() {
     if constexpr (std::is_same_v<Dataset, uac::Dataset>) {
-      this->_data_field = uac::utils::io::getMemberMap();
+      this->_data_field = uac::utils::getMemberMap();
     }
   }
 
@@ -57,7 +56,8 @@ class WriterBase
   typename std::enable_if_t<urx::utils::TypeContainer<T>::VALUE == urx::utils::ContainerType::RAW>
   serializeHdf5(const std::string& name, const T& field, const H5::Group& group) {
     if constexpr (std::is_same_v<T, uac::HwConfig>) {
-      const H5::Group group_child(group.createGroup(name));
+      const H5::Group group_child = urx::utils::io::details::createOrOpenGroup(group, name);
+
       for (const auto& i : field.values) {
         std::visit(
             [this, name_i = i.first, &group_child](const auto& j) {
@@ -112,7 +112,7 @@ class WriterBase
           }
           using T2 =
               typename std::remove_reference_t<std::remove_cv_t<decltype(ptr)>>::element_type;
-          const auto& all_shared = urx::utils::io::getSharedPtr<T2>(this->_map_to_shared_ptr);
+          const auto& all_shared = urx::utils::getSharedPtr<T2>(this->_map_to_shared_ptr);
           auto idx = std::find_if(
               all_shared.begin(), all_shared.end(),
               [&ptr](const std::shared_ptr<T2>& data) { return ptr.get() == data.get(); });

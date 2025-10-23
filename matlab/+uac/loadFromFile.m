@@ -1,5 +1,9 @@
-function res = loadFromFile(filename)
+function res = loadFromFile(filename, raw_data_load_policy)
   libBinding = uac.LibBinding.getInstance();
-  dataset_ptr = libBinding.call('uac_load_from_file', filename);
-  res = uac.Dataset(dataset_ptr, urx.PtrType.SHARED, []);
+  if nargin == 1
+    dataset_ptr = libBinding.call('uac_load_from_file', filename);
+  else
+    dataset_ptr = libBinding.call('uac_load_from_file_options', filename, raw_data_load_policy);
+  end
+  res = uac.Dataset(urx.PtrType.SHARED, dataset_ptr, []);
 end

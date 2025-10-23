@@ -6,7 +6,6 @@
 #include <utility>
 #include <vector>
 
-#include <uac/detail/compare.h>  // IWYU pragma: keep
 #include <uac/trigger.h>
 
 namespace uac {
@@ -56,6 +55,7 @@ inline bool DestinationLink::secureComparison(
                    }) == already_compared_obj.end()) {
     already_compared_obj.push_back(comparison_pair);
     return eq_res &&
+           // NOLINTNEXTLINE(misc-no-recursion)
            (((lhs_lock && rhs_lock) ? (lhs_lock->secureComparison(*rhs_lock, already_compared_obj))
                                     : (!!lhs_lock == !!rhs_lock)));
   }

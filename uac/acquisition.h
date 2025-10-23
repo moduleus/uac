@@ -7,9 +7,9 @@
 #include <vector>
 
 #include <urx/acquisition.h>
+#include <urx/detail/compare.h>
 #include <urx/detail/double_nan.h>
 
-#include <uac/detail/compare.h>
 #include <uac/excitation.h>
 #include <uac/group.h>
 #include <uac/hw_config.h>
@@ -22,7 +22,8 @@ namespace uac {
 struct Acquisition : urx::detail::AcquisitionBase<Excitation, Group> {
   bool operator==(const Acquisition& other) const {
     return urx::detail::AcquisitionBase<Excitation, Group>::operator==(other) &&
-           initial_group == other.initial_group && super_groups == other.super_groups &&
+           urx::valueComparison(initial_group, other.initial_group) &&
+           urx::valueComparison(super_groups, other.super_groups) &&
            time_offset == other.time_offset && trigger_in == other.trigger_in &&
            trigger_out == other.trigger_out && hw_config == other.hw_config;
   }

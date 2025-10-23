@@ -17,7 +17,7 @@ classdef Dataset < uac.Object
     function res = toUrx(this)
       warning('uac.Dataset.toUrx is depreciated. Use static method uac.toUrx(dataset).');
       dataset_ptr = this.libBindingRef.call('uac_to_urx', this.id);
-      res = urx.Dataset(dataset_ptr, urx.PtrType.SHARED, []);
+      res = urx.Dataset(urx.PtrType.SHARED, dataset_ptr, []);
     end
   end
 
@@ -26,7 +26,7 @@ classdef Dataset < uac.Object
       warning('uac.Dataset.loadFromFile is depreciated. Use static method uac.loadFromFile(filename).');
       libBinding = uac.LibBinding.getInstance();
       dataset_ptr = libBinding.call('uac_load_from_file', filename);
-      this = uac.Dataset(dataset_ptr, urx.PtrType.SHARED, []);
+      this = uac.Dataset(urx.PtrType.SHARED, dataset_ptr, []);
     end
   end
 end

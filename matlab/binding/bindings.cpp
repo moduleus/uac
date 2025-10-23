@@ -1,7 +1,9 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <iostream>
 #include <memory>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <typeindex>
@@ -18,7 +20,9 @@
 #include <urx/matlab/bindings_impl.h>
 #include <urx/probe.h>
 #include <urx/transform.h>
-#include <urx/utils/type_container.h>
+#include <urx/utils/cpp.h>
+#include <urx/utils/io/reader_options.h>
+#include <urx/utils/io/writer_options.h>
 #include <urx/vector.h>
 #include <urx/wave.h>
 
@@ -41,7 +45,9 @@
 #include <uac/transform.h>  // IWYU pragma: keep
 #include <uac/transmit_setup.h>
 #include <uac/trigger.h>
+#include <uac/utils/clone.h>
 #include <uac/utils/to_urx.h>
+#include <uac/utils/validator.h>
 #include <uac/vector.h>  // IWYU pragma: keep
 #include <uac/version.h>
 #include <uac/wave.h>  // IWYU pragma: keep
@@ -476,16 +482,56 @@ void *uac_load_from_file([[maybe_unused]] const char *filename) {
 #endif
 }
 
+void *uac_load_from_file_options([[maybe_unused]] const char *filename,
+                                 [[maybe_unused]] int raw_data_load_policy) {
+#ifdef URX_WITH_HDF5
+  return new std::shared_ptr<uac::Dataset>(uac::utils::io::reader::loadFromFile(
+      filename, {static_cast<urx::utils::io::RawDataLoadPolicy>(raw_data_load_policy)}));
+#else
+  return nullptr;
+#endif
+}
+
 void uac_save_to_file([[maybe_unused]] const char *filename, [[maybe_unused]] void *dataset) {
 #ifdef URX_WITH_HDF5
+  urx::utils::io::WriterOptions options;
+  options.setCleanUnusableData(false);
+  options.setCheckData(false);
+  uac::utils::io::writer::saveToFile(
+      filename, **static_cast<std::shared_ptr<uac::Dataset> *>(dataset), options);
+#endif
+}
+
+void uac_save_to_file_options([[maybe_unused]] const char *filename, [[maybe_unused]] void *dataset,
+                              [[maybe_unused]] bool chunk_group_data,
+                              [[maybe_unused]] bool clean_unusable_data,
+                              [[maybe_unused]] bool check_data) {
+#ifdef URX_WITH_HDF5
   uac::utils::io::writer::saveToFile(filename,
-                                     **static_cast<std::shared_ptr<uac::Dataset> *>(dataset));
+                                     **static_cast<std::shared_ptr<uac::Dataset> *>(dataset),
+                                     {chunk_group_data, clean_unusable_data, check_data});
 #endif
 }
 
 void *uac_to_urx(void *dataset) {
   return new std::shared_ptr<urx::Dataset>(
       uac::utils::toUrx(**static_cast<std::shared_ptr<uac::Dataset> *>(dataset)));
+}
+
+void *uac_clone_dataset(void *dataset) {
+  return new std::shared_ptr<uac::Dataset>(
+      uac::utils::clone(*static_cast<std::shared_ptr<uac::Dataset> *>(dataset)));
+}
+
+bool uac_validate_dataset(void *dataset) {
+  uac::utils::ValidatorReport validator;
+  validator.check(**static_cast<std::shared_ptr<uac::Dataset> *>(dataset));
+  if (validator.getOutput().empty()) {
+    return true;
+  }
+
+  std::cout << validator.getOutputAsString();
+  return false;
 }
 
 // NOLINTEND(cppcoreguidelines-owning-memory)

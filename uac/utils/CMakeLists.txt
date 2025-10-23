@@ -16,24 +16,28 @@ if(WITH_HDF5)
   endif()
 endif()
 
-set(UAC_UTILS_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/to_urx.cpp)
+set(UAC_UTILS_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/clone.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/serialize_helper.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/to_urx.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/validator.cpp)
 set(UAC_UTILS_MISC ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
-set(UAC_UTILS_H ${CMAKE_CURRENT_SOURCE_DIR}/to_urx.h)
+set(UAC_UTILS_H
+    ${CMAKE_CURRENT_SOURCE_DIR}/clone.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/serialize_helper.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/to_urx.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/validator.h)
 
 if(WITH_HDF5)
-  list(
-    APPEND
-    UAC_UTILS_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/io/enums.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/io/reader.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/io/serialize_helper.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/io/writer.cpp)
+  list(APPEND UAC_UTILS_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/io/enums.cpp
+       ${CMAKE_CURRENT_SOURCE_DIR}/io/reader.cpp
+       ${CMAKE_CURRENT_SOURCE_DIR}/io/writer.cpp)
   list(
     APPEND
     UAC_UTILS_H
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/dataset_gen.h
     ${CMAKE_CURRENT_SOURCE_DIR}/io/reader_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/io/reader.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/io/serialize_helper.h
     ${CMAKE_CURRENT_SOURCE_DIR}/io/writer_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/io/writer.h)
 endif()
@@ -64,9 +68,6 @@ target_sources(
 if(UAC_UTILS_SRCS STREQUAL "" AND UAC_UTILS_H STREQUAL "")
   set_target_properties(${UAC_UTILS_LIBRARY} PROPERTIES LINKER_LANGUAGE CXX)
 endif()
-if(ENABLE_PCH)
-  target_precompile_headers(${UAC_UTILS_LIBRARY} PRIVATE ${UAC_PCH})
-endif()
 
 set(CMAKE_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR}/${INSTALL_NAME})
 
@@ -78,9 +79,6 @@ if(WITH_HDF5)
   target_link_libraries(
     ${UAC_UTILS_LIBRARY} PRIVATE hdf5::hdf5-${SEARCH_TYPE}
                                  hdf5::hdf5_cpp-${SEARCH_TYPE})
-  if(ENABLE_PCH)
-    target_precompile_headers(${UAC_UTILS_LIBRARY} PRIVATE ${UAC_PCH_IO})
-  endif()
 endif()
 
 if(NOT CALL_FROM_SETUP_PY)

@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <cstddef>
-#include <iterator>
-#include <stdexcept>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -19,6 +18,7 @@
 #include <urx/receive_setup.h>
 #include <urx/transform.h>
 #include <urx/transmit_setup.h>
+#include <urx/utils/common.h>
 #include <urx/version.h>
 #include <urx/wave.h>
 
@@ -35,17 +35,6 @@ namespace uac::utils {
 
 namespace {
 
-template <typename T>
-size_t findVectorSharedPtrIndex(const std::vector<std::shared_ptr<T>>& container, T* pointer) {
-  auto eg_it =
-      std::find_if(container.begin(), container.end(),
-                   [pointer](const std::shared_ptr<T>& eg_i) { return eg_i.get() == pointer; });
-  if (eg_it != container.end()) {
-    return std::distance(container.begin(), eg_it);
-  }
-  throw std::runtime_error("Failed to get index.");
-}
-
 template <typename Turx, typename Tuac>
 std::shared_ptr<Turx> findSmartPointer(const std::vector<std::shared_ptr<Turx>>& container_urx,
                                        const std::vector<std::shared_ptr<Tuac>>& container_uac,
@@ -54,8 +43,11 @@ std::shared_ptr<Turx> findSmartPointer(const std::vector<std::shared_ptr<Turx>>&
   const bool empty_ptr = !pointer_uac.owner_before(std::weak_ptr<Tuac>{}) &&
                          !std::weak_ptr<Tuac>{}.owner_before(pointer_uac);
   if (!empty_ptr) {
-    const size_t index = findVectorSharedPtrIndex(container_uac, pointer_uac.lock().get());
-    pointer_urx = container_urx[index];
+    const std::optional<size_t> index =
+        urx::utils::common::getElementIndex(container_uac, pointer_uac, false);
+    if (index.has_value() && *index < container_urx.size()) {
+      pointer_urx = container_urx[*index];
+    }
   }
 
   return pointer_urx;
@@ -121,17 +113,25 @@ std::shared_ptr<urx::Dataset> toUrx(const uac::Dataset& dataset) {
     for (const auto& event : group->sequence) {
       urx::Event event_conv;
 
-      event_conv.transmit_setup.probe = dataset_conv->acquisition.probes[findVectorSharedPtrIndex(
-          dataset.acquisition.probes, event.transmit_setup.probe.lock().get())];
+      std::optional<size_t> probe_id = urx::utils::common::getElementIndex(
+          dataset.acquisition.probes, event.transmit_setup.probe, false);
+      if (probe_id.has_value()) {
+        event_conv.transmit_setup.probe = dataset_conv->acquisition.probes[*probe_id];
+      }
 
       event_conv.transmit_setup.wave = event.transmit_setup.wave;
 
       event_conv.transmit_setup.active_elements = event.transmit_setup.active_elements;
 
       for (const auto& excitation : event.transmit_setup.excitations) {
-        event_conv.transmit_setup.excitations.push_back(
-            dataset_conv->acquisition.excitations[findVectorSharedPtrIndex(
-                dataset.acquisition.excitations, excitation.lock().get())]);
+        std::optional<size_t> exc_id =
+            urx::utils::common::getElementIndex(dataset.acquisition.excitations, excitation, false);
+        if (exc_id.has_value()) {
+          event_conv.transmit_setup.excitations.push_back(
+              dataset_conv->acquisition.excitations[*exc_id]);
+        } else {
+          event_conv.transmit_setup.excitations.emplace_back();
+        }
       }
 
       event_conv.transmit_setup.delays = event.transmit_setup.delays;
@@ -140,8 +140,11 @@ std::shared_ptr<urx::Dataset> toUrx(const uac::Dataset& dataset) {
 
       event_conv.transmit_setup.time_offset = event.transmit_setup.time_offset;
 
-      event_conv.receive_setup.probe = dataset_conv->acquisition.probes[findVectorSharedPtrIndex(
-          dataset.acquisition.probes, event.receive_setup.probe.lock().get())];
+      probe_id = urx::utils::common::getElementIndex(dataset.acquisition.probes,
+                                                     event.receive_setup.probe, false);
+      if (probe_id.has_value()) {
+        event_conv.receive_setup.probe = dataset_conv->acquisition.probes[*probe_id];
+      }
 
       event_conv.receive_setup.probe_transform = event.receive_setup.probe_transform;
 

@@ -4,7 +4,6 @@
 
 #include <urx/group.h>
 
-#include <uac/detail/compare.h>  // IWYU pragma: keep
 #include <uac/event.h>
 #include <uac/igroup.h>
 

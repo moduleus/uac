@@ -16,9 +16,9 @@
 
 #include <urx/probe.h>
 #include <urx/utils/common.h>
+#include <urx/utils/cpp.h>
 #include <urx/utils/io/reader_impl.h>
 #include <urx/utils/io/serialize_helper.h>
-#include <urx/utils/type_container.h>
 
 #include <uac/dataset.h>
 #include <uac/excitation.h>
@@ -27,7 +27,7 @@
 #include <uac/igroup.h>
 #include <uac/probe.h>
 #include <uac/super_group.h>
-#include <uac/utils/io/serialize_helper.h>
+#include <uac/utils/serialize_helper.h>
 
 namespace uac::utils::io {
 
@@ -253,8 +253,7 @@ class ReaderBase
         this->deserializeHdf5<std::string>(name, idx, group);
 
         if (idx[0] == 's') {
-          const auto& map_i =
-              urx::utils::io::getSharedPtr<uac::SuperGroup>(this->_map_to_shared_ptr);
+          const auto& map_i = urx::utils::getSharedPtr<uac::SuperGroup>(this->_map_to_shared_ptr);
           const size_t index = std::stoul(idx.substr(1));
 
           if (map_i.size() > index && map_i[index]) {
@@ -263,7 +262,7 @@ class ReaderBase
             this->_async_weak_assign.push_back([&field, &map_i, index]() { field = map_i[index]; });
           }
         } else if (idx[0] == 'g') {
-          const auto& map_i = urx::utils::io::getSharedPtr<uac::Group>(this->_map_to_shared_ptr);
+          const auto& map_i = urx::utils::getSharedPtr<uac::Group>(this->_map_to_shared_ptr);
           const size_t index = std::stoul(idx.substr(1));
 
           if (map_i.size() > index && map_i[index]) {

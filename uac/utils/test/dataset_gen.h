@@ -10,7 +10,7 @@
 #include <vector>
 
 #include <urx/detail/double_nan.h>
-#include <urx/utils/io/test/io.h>
+#include <urx/utils/test/dataset_gen.h>
 
 #include <uac/destination_link.h>
 #include <uac/enums.h>
@@ -23,12 +23,10 @@
 #include <uac/transmit_setup.h>
 #include <uac/trigger.h>
 
-namespace uac::utils::io::test {
+namespace uac::utils::test {
 
 template <typename T>
-std::shared_ptr<T> generateFakeDataset() {
-  auto dataset = urx::utils::io::test::generateFakeDataset<T>();
-
+void populateFakeUacDataset(std::shared_ptr<T>& dataset) {
   TriggerIn trigger_in;
   TriggerOut trigger_out;
 
@@ -66,8 +64,9 @@ std::shared_ptr<T> generateFakeDataset() {
   super_group->description = "Hello";
 
   dataset->acquisition.super_groups.push_back(super_group);
+  dataset->acquisition.super_groups.push_back(std::make_shared<uac::SuperGroup>());
   dataset->acquisition.initial_group = super_group;
-  dataset->acquisition.time_offset = 11;
+  dataset->acquisition.time_offset = urx::DoubleNan::URX_NAN;
   trigger_in.channel = "Channel2";
   trigger_in.edge = uac::Edge::RISING;
   dataset->acquisition.trigger_in = trigger_in;
@@ -116,7 +115,9 @@ std::shared_ptr<T> generateFakeDataset() {
                                                    {{"str2", std::string{"coucou2"}},
                                                     {"vect2", std::vector<int>{9, 8, 7, 6}}}}}}}};
 
-  const std::shared_ptr<Group> group = dataset->acquisition.groups[0];
+  const std::shared_ptr<Group> group = dataset->acquisition.groups[1];
+  dataset->acquisition.groups.push_back(std::make_shared<uac::Group>());
+  dataset->acquisition.groups.back()->sequence.emplace_back();
 
   group->time_offset = -450;
 
@@ -138,6 +139,8 @@ std::shared_ptr<T> generateFakeDataset() {
   super_group->destinations.push_back(destination_link);
   super_group->destinations.push_back(destination_link);
   super_group->destinations.push_back(destination_link);
+  super_group->destinations.back().trigger = TriggerIn();
+  super_group->destinations.emplace_back();
   super_group->period = 448.3;
   super_group->hw_config = {{{"str", std::string{"coucou"}}}};
 
@@ -159,8 +162,22 @@ std::shared_ptr<T> generateFakeDataset() {
   const std::shared_ptr<Excitation> excitation = dataset->acquisition.excitations[0];
   excitation->hw_config = {
       {{"num", static_cast<unsigned short>(9874)}, {"vect", std::vector<short>{741, -752}}}};
+}
+
+template <typename T>
+std::shared_ptr<T> generateFakeDataset() {
+  auto dataset = urx::utils::test::generateFakeDataset<T>();
+  populateFakeUacDataset(dataset);
 
   return dataset;
 }
 
-}  // namespace uac::utils::io::test
+template <typename T>
+std::shared_ptr<T> generateWrongDataset() {
+  auto dataset = urx::utils::test::generateWrongDataset<T>();
+  populateFakeUacDataset(dataset);
+
+  return dataset;
+}
+
+}  // namespace uac::utils::test

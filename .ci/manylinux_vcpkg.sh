@@ -27,7 +27,7 @@ for f in /opt/python/*/bin/python; do
 
     if [ -d urx ]; then
         cp -R vcpkg-registry urx
-        cmake -S urx -B urx_$f -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$VCPKG_LOCAL_GIT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_OVERLAY_TRIPLETS=vcpkg-registry/triplets -DBUILD_SHARED_LIBS=OFF -DWITH_HDF5=ON -DBUILD_TESTING=ON -DWITH_PYTHON:BOOL=ON -DWITH_PYTHON_WHL:BOOL=ON -DWITH_MATLAB:BOOL=OFF -DENABLE_PCH:BOOL=OFF -DPython3_EXECUTABLE=$f -DCMAKE_CXX_FLAGS="-Wno-array-bounds -Wno-stringop-overread"
+        cmake -S urx -B urx_$f -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$VCPKG_LOCAL_GIT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_OVERLAY_TRIPLETS=vcpkg-registry/triplets -DBUILD_SHARED_LIBS=OFF -DWITH_HDF5=ON -DBUILD_TESTING=ON -DWITH_PYTHON:BOOL=ON -DWITH_PYTHON_WHL:BOOL=ON -DWITH_MATLAB:BOOL=OFF -DPython3_EXECUTABLE=$f -DCMAKE_CXX_FLAGS="-Wno-array-bounds -Wno-stringop-overread"
         cmake --build urx_$f --config Release --parallel $NUM_PARALLEL --target UrxPythonWheel
     fi
     pyt=$(basename $(dirname $(dirname $f)))

@@ -38,7 +38,6 @@
 #include <uac/acquisition.h>
 #include <uac/dataset.h>
 #include <uac/destination_link.h>
-#include <uac/detail/compare.h>
 #include <uac/element.h>
 #include <uac/element_geometry.h>
 #include <uac/enums.h>
@@ -56,11 +55,16 @@
 #include <uac/transmit_setup.h>
 #include <uac/trigger.h>
 #include <uac/uac.h>
+#include <uac/utils/clone.h>
 #include <uac/utils/to_urx.h>
+#include <uac/utils/validator.h>
 #include <uac/version.h>
 #include <uac/wave.h>
 
 #ifdef URX_WITH_HDF5
+#include <urx/utils/io/reader_options.h>
+#include <urx/utils/io/writer_options.h>
+
 #include <uac/utils/io/reader.h>
 #include <uac/utils/io/writer.h>
 #endif
@@ -793,11 +797,29 @@ PYBIND11_MODULE(bindings, m) {
                                                          PyExc_RuntimeError);
 
 #ifdef URX_WITH_HDF5
-  m.def("loadFromFile", &uac::utils::io::reader::loadFromFile);
-  m.def("saveToFile", &uac::utils::io::writer::saveToFile);
+  m.attr("RawDataLoadPolicy") = purx.attr("RawDataLoadPolicy");
+  m.attr("ReaderOptions") = purx.attr("ReaderOptions");
+  m.attr("WriterOptions") = purx.attr("WriterOptions");
+
+  m.def("loadFromFile", &uac::utils::io::reader::loadFromFile, py::arg("filename"),
+        py::arg("options") = urx::utils::io::ReaderOptions());
+  m.def("saveToFile", &uac::utils::io::writer::saveToFile, py::arg("filename"), py::arg("dataset"),
+        py::arg("options") = urx::utils::io::WriterOptions());
 #endif
 
   m.def("toUrx", &uac::utils::toUrx);
+
+  m.def("clone",
+        static_cast<std::shared_ptr<uac::Dataset> (*)(const std::shared_ptr<uac::Dataset> &)>(
+            &uac::utils::clone),
+        "Clone/Duplicate UAC Dataset class in memory");
+
+  m.def("validate", [](const uac::Dataset &dataset) {
+    uac::utils::ValidatorReport validator;
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    validator.check(const_cast<uac::Dataset &>(dataset));
+    validator.throwIfFailure();
+  });
 }
 
 // NOLINTEND(misc-redundant-expression)

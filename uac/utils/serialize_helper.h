@@ -19,7 +19,7 @@
 #include <urx/impulse_response.h>
 #include <urx/probe.h>
 #include <urx/transform.h>
-#include <urx/utils/io/serialize_helper.h>
+#include <urx/utils/cpp.h>
 #include <urx/vector.h>
 #include <urx/wave.h>
 
@@ -44,10 +44,10 @@
 #include <uac/version.h>
 #include <uac/wave.h>
 
-namespace uac::utils::io {
+namespace uac::utils {
 
-using urx::utils::io::MapToSharedPtr;
-using urx::utils::io::nameTypeid;
+using urx::utils::MapToSharedPtr;
+using urx::utils::nameTypeid;
 
 using AllTypeInVariant = std::variant<
     Acquisition*, urx::DataType*, urx::DoubleNan*, Edge*, Polarity*, HwConfig*, urx::ProbeType*,
@@ -69,4 +69,4 @@ using AllTypeInVariant = std::variant<
 const std::unordered_map<std::type_index, std::vector<std::pair<AllTypeInVariant, std::string>>>&
 getMemberMap();
 
-}  // namespace uac::utils::io
+}  // namespace uac::utils

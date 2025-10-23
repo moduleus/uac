@@ -540,17 +540,30 @@ classdef CreateUff < matlab.unittest.TestCase
       hwconfig4.field1 = 'coucou2';
       excitation.hwConfig.hw_vhw = {hwconfig3, hwconfig4};
 
-      uac.saveToFile('test.uac', dataset);
+      uac.saveToFile('test.uac', dataset, false, false, false);
+
+      testcase.verifyFalse(uac.validate(dataset))
 
       datasetUrx = uac.toUrx(dataset);
       
       testcase.verifyEqual(datasetUrx.acquisition.description, dataset.acquisition.description);
 
       uacLoaded = uac.loadFromFile('test.uac');
+      uacLoaded2 = uac.loadFromFile('test.uac', urx.RawDataLoadPolicy.STREAM);
 
       testcase.verifyTrue(uacLoaded.acquisition.initialGroup.repetitionCount == superGroup.repetitionCount);
+      testcase.verifyTrue(uacLoaded2.acquisition.initialGroup.repetitionCount == superGroup.repetitionCount);
 
       delete 'test.uac'
+
+      datasetCloned = uac.cloneDataset(dataset);
+
+      testcase.verifyEqual(dataset, datasetCloned);
+      testcase.verifyEqual(dataset.acquisition.authors, datasetCloned.acquisition.authors);
+      testcase.verifyEqual(dataset.acquisition.description, datasetCloned.acquisition.description);
+      datasetCloned.acquisition.authors = "Other authors";
+      testcase.verifyNotEqual(dataset.acquisition.authors, datasetCloned.acquisition.authors);
+      testcase.verifyEqual(dataset.acquisition.description, datasetCloned.acquisition.description);
     end
   end
 end

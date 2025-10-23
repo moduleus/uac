@@ -9,7 +9,6 @@
 
 #include <urx/detail/double_nan.h>
 
-#include <uac/detail/compare.h>  // IWYU pragma: keep
 #include <uac/hw_config.h>
 #include <uac/trigger.h>
 
@@ -76,6 +75,7 @@ inline bool IGroup::secureComparison(
                                  // NOLINTNEXTLINE(misc-no-recursion)
                                  [&already_compared_obj](const DestinationLink& dl1,
                                                          const DestinationLink& dl2) {
+                                   // NOLINTNEXTLINE(misc-no-recursion)
                                    return dl1.secureComparison(dl2, already_compared_obj);
                                  }));
   }

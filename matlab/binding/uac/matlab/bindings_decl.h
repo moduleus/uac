@@ -28,8 +28,10 @@
 #define IGROUP_TRUE_TYPE_DECL(type, member) _IGROUP_TRUE_TYPE_DECL(type, member)
 
 #define _HW_CONFIG_DECL(name)                                                                     \
-  URX_MATLAB_EXPORT void *CONCAT2(name, new)(void);                                               \
-  URX_MATLAB_EXPORT void CONCAT2(name, delete)(void *this_ptr);                                   \
+  URX_MATLAB_EXPORT void *CONCAT3(name, new, raw)(void);                                          \
+  URX_MATLAB_EXPORT void *CONCAT3(name, new, shared)(void);                                       \
+  URX_MATLAB_EXPORT void CONCAT3(name, delete, raw)(void *this_ptr);                              \
+  URX_MATLAB_EXPORT void CONCAT3(name, delete, shared)(void *this_ptr);                           \
   URX_MATLAB_EXPORT void CONCAT3(name, clear, raw)(void *this_ptr);                               \
   URX_MATLAB_EXPORT void CONCAT3(name, clear, shared)(void *this_ptr);                            \
   URX_MATLAB_EXPORT uint64_t CONCAT3(name, size, raw)(void *this_ptr);                            \

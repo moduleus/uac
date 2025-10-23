@@ -169,9 +169,17 @@ URX_MATLAB_EXPORT void hw_config_set_value(void *hw_config, void *name, TypeHwCo
                                            const void *value, uint32_t size);
 
 URX_MATLAB_EXPORT void *uac_load_from_file(const char *filename);
+URX_MATLAB_EXPORT void *uac_load_from_file_options(const char *filename, int raw_data_load_policy);
 URX_MATLAB_EXPORT void uac_save_to_file(const char *filename, void *dataset);
+URX_MATLAB_EXPORT void uac_save_to_file_options(const char *filename, void *dataset,
+                                                bool chunk_group_data, bool clean_unusable_data,
+                                                bool check_data);
 
 URX_MATLAB_EXPORT void *uac_to_urx(void *dataset);
+
+URX_MATLAB_EXPORT void *uac_clone_dataset(void *dataset);
+
+URX_MATLAB_EXPORT bool uac_validate_dataset(void *dataset);
 
 VECTOR_RAW_DECL_RAW(uint8_t);
 VECTOR_RAW_DECL_RAW(uint16_t);

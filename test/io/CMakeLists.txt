@@ -2,9 +2,6 @@ if(WITH_HDF5)
   set(SRCS_FILES writer_test.cpp)
 
   add_executable(UacTestIo ${SRCS_FILES})
-  if(ENABLE_PCH)
-    target_precompile_headers(UacTestIo PRIVATE ${UAC_PCH} ${UAC_PCH_TEST})
-  endif()
 
   target_link_libraries(
     UacTestIo PRIVATE Uac::Uac Uac::UacUtils ${HDF5_CXX_LIBRARIES}

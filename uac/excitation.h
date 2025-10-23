@@ -2,7 +2,6 @@
 
 #include <urx/excitation.h>
 
-#include <uac/detail/compare.h>  // IWYU pragma: keep
 #include <uac/hw_config.h>
 
 namespace uac {

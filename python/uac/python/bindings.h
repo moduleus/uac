@@ -26,6 +26,21 @@
 #include <uac/super_group.h>
 #include <uac/vector.h>  // IWYU pragma: keep
 
+namespace uac {
+
+template <typename T>
+inline std::enable_if_t<std::is_same_v<Excitation, T>, bool> operator==(
+    const std::shared_ptr<T> &lhs, const std::shared_ptr<T> &rhs) {
+  return (lhs && rhs) ? (*lhs == *rhs) : (!!lhs == !!rhs);
+}
+
+template <typename T>
+inline std::enable_if_t<std::is_same_v<Excitation, T>, bool> operator!=(
+    const std::shared_ptr<T> &lhs, const std::shared_ptr<T> &rhs) {
+  return !(lhs == rhs);
+}
+
+}  // namespace uac
 namespace uac::python {
 
 using VecGroupPtr = std::vector<std::shared_ptr<uac::Group>>;

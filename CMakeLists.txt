@@ -54,13 +54,15 @@ endif()
 
 project(
   Uac
-  VERSION 1.2.0
+  VERSION 1.3.0
   LANGUAGES C CXX
   DESCRIPTION "Ultrasound Acquisition Configuration format C++ implementation")
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(CheckIPOSupported)
+
+include(cmake/CompilerCaching.cmake)
 
 # Configure compiler ###
 
@@ -89,8 +91,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_LINK_WHAT_YOU_USE ON)
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
-
-option(ENABLE_PCH "Build with PCH" ON)
 
 add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
 add_compile_definitions(_SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING)
@@ -143,62 +143,6 @@ if(NOT CPack_CMake_INCLUDED EQUAL 1)
   include(CPack)
 endif()
 
-if(ENABLE_PCH)
-  set(UAC_PCH
-      "<algorithm>"
-      "<array>"
-      "<cassert>"
-      "<cmath>"
-      "<complex>"
-      "<cstddef>"
-      "<cstdint>"
-      "<cstdio>"
-      "<cstdlib>"
-      "<cstring>"
-      "<exception>"
-      "<iomanip>"
-      "<ios>"
-      "<iosfwd>"
-      "<iostream>"
-      "<istream>"
-      "<iterator>"
-      "<limits>"
-      "<locale>"
-      "<memory>"
-      "<optional>"
-      "<ostream>"
-      "<regex>"
-      "<sstream>"
-      "<stdexcept>"
-      "<string_view>"
-      "<string>"
-      "<type_traits>"
-      "<typeindex>"
-      "<unordered_map>"
-      "<utility>"
-      "<variant>"
-      "<vector>"
-      "<version>")
-  if(WITH_HDF5)
-    set(UAC_PCH_IO "<H5Cpp.h>")
-  endif()
-  if(BUILD_TESTING)
-    set(UAC_PCH_TEST
-        "<catch2/catch_test_macros.hpp>"
-        "<catch2/matchers/catch_matchers_floating_point.hpp>"
-        "<catch2/matchers/catch_matchers.hpp>")
-  endif()
-  set(UAC_PCH_PYTHON
-      "<pybind11/attr.h>"
-      "<pybind11/buffer_info.h>"
-      "<pybind11/cast.h>"
-      "<pybind11/numpy.h>"
-      "<pybind11/operators.h>"
-      "<pybind11/pybind11.h>"
-      "<pybind11/pytypes.h>"
-      "<pybind11/stl_bind.h>")
-endif()
-
 if(WITH_PYTHON AND (NOT TARGET pybind11::pybind11 OR NOT TARGET Python3::Module
                    ))
   set(PYTHON_IS_DEBUG OFF)
@@ -212,7 +156,8 @@ if(WITH_PYTHON AND (NOT TARGET pybind11::pybind11 OR NOT TARGET Python3::Module
     REQUIRED)
   find_package(pybind11 2.11 REQUIRED)
 
-  # Check if Python3_EXECUTABLE is debug and modify Python3_EXECUTABLE according to.
+  # Check if Python3_EXECUTABLE is debug and modify Python3_EXECUTABLE according
+  # to.
   execute_process(
     COMMAND "${Python3_EXECUTABLE}" "-c"
             "import sys; sys.exit(hasattr(sys, 'gettotalrefcount'))"

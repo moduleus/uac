@@ -1,5 +1,3 @@
-#include "../io/io.h"
-
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -12,10 +10,12 @@
 #include <urx/dataset.h>
 
 #include <uac/dataset.h>
+#include <uac/utils/test/dataset_gen.h>
 #include <uac/utils/to_urx.h>
 
 #ifdef URX_WITH_HDF5
 #include <urx/utils/io/reader.h>
+#include <urx/utils/io/writer_options.h>
 
 #include <uac/utils/io/writer.h>
 #else
@@ -25,12 +25,14 @@
 namespace uac::utils::test {
 
 TEST_CASE("Uac to Urx", "[utils]") {
-  auto dataset_uac = uac::utils::io::test::generateFakeDataset<uac::Dataset>();
+  auto dataset_uac = uac::utils::test::generateFakeDataset<uac::Dataset>();
 
   auto dataset_urx = uac::utils::toUrx(*dataset_uac);
 
 #ifdef URX_WITH_HDF5
-  uac::utils::io::writer::saveToFile("dataset_to_urx.uac", *dataset_uac);
+  urx::utils::io::WriterOptions options;
+  options.setCheckData(false);
+  uac::utils::io::writer::saveToFile("dataset_to_urx.uac", *dataset_uac, options);
 
   auto dataset_loaded = urx::utils::io::reader::loadFromFile("dataset_to_urx.uac");
 

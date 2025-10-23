@@ -1,48 +1,42 @@
-import ultrasound_acquisition_configuration as uac
-import numpy as np
-import unittest
 import os
 import sys
-import argparse
+import unittest
+
+import ultrasound_acquisition_configuration as uac
 
 # CMake must be configure before launching this script.
 with open(os.path.dirname(__file__) + "/urx_python_path.txt") as f:
     sys.path.append(f.readline())
 
 from test_bindings_acquisition import test_acquisition
+from test_bindings_clone import test_clone_dataset
 from test_bindings_dataset import test_dataset
+from test_bindings_destination_link import test_destination_link
 from test_bindings_double_nan import test_double_nan
-from test_bindings_element_geometry import test_element_geometry
 from test_bindings_element import test_element
+from test_bindings_element_geometry import test_element_geometry
 from test_bindings_event import test_event
 from test_bindings_excitation import test_excitation
 from test_bindings_group import test_group
+from test_bindings_hw_config import test_hw_config
 from test_bindings_impulse_response import test_impulse_response
 from test_bindings_probe import test_probe
 from test_bindings_receive_setup import test_receive_setup
-from test_bindings_std_vector import (
-    test_vec_float64,
-    test_vec_uint32,
-    test_vec_vec_uint32,
-    test_vec_vec_float64,
-    test_vec_vector3d,
-    test_vec_element_geometry_ptr,
-    test_vec_impulse_response_ptr,
-    test_vec_element,
-    test_vec_event,
-    test_vec_excitation_ptr,
-)
+from test_bindings_std_vector import (test_vec_element,
+                                      test_vec_element_geometry_ptr,
+                                      test_vec_event, test_vec_excitation_ptr,
+                                      test_vec_float64,
+                                      test_vec_impulse_response_ptr,
+                                      test_vec_uint32, test_vec_vec_float64,
+                                      test_vec_vec_uint32, test_vec_vector3d)
+from test_bindings_super_group import test_super_group
 from test_bindings_transform import test_transform
 from test_bindings_transmit_setup import test_transmit_setup
+from test_bindings_trigger import test_trigger_in, test_trigger_out
 from test_bindings_utils import test_utils_io
 from test_bindings_vector import test_vector2d, test_vector3d
 from test_bindings_version import test_version
 from test_bindings_wave import test_wave
-from test_bindings_hw_config import test_hw_config
-from test_bindings_destination_link import test_destination_link
-from test_bindings_super_group import test_super_group
-from test_bindings_trigger import test_trigger_in, test_trigger_out
-from parameterized import parameterized
 
 
 class TestBindings(unittest.TestCase):
@@ -91,7 +85,8 @@ class TestBindings(unittest.TestCase):
         )
 
         initial_group = uac.Group()
-        acq = uac.Acquisition(
+        # acq =
+        uac.Acquisition(
             "Authors",
             "Description",
             "fr_FR",
@@ -667,6 +662,11 @@ class TestBindings(unittest.TestCase):
             hwconfig_constructor=lambda: uac.HwConfig(),
             vec_float64_args=lambda data: uac.VecFloat64(data),
         )
+
+    def test_clone_run(
+        self,
+    ):
+        test_clone_dataset(self)
 
 
 if __name__ == "__main__":

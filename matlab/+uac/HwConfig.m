@@ -109,12 +109,12 @@ classdef HwConfig < uac.Object
           res{idx2} = this.getValueVecString(idx, idx2);
         end
       elseif type == uac.HwConfigEnum.struct
-        subHwConfig = uac.HwConfig(ptr, urx.PtrType.RAW, []);
+        subHwConfig = uac.HwConfig(urx.PtrType.RAW, ptr, []);
         res = subHwConfig.fromCpp();
       elseif type == uac.HwConfigEnum.vec_struct
         res = uac.HwConfig.empty;
         for idx2 = this.getVecStructSize(idx):-1:1
-          resi = uac.HwConfig(this.getValueVecStruct(idx, idx2), urx.PtrType.RAW, []);
+          resi = uac.HwConfig(urx.PtrType.RAW, this.getValueVecStruct(idx, idx2), []);
           res{idx2} = resi.fromCpp();
         end
       else
