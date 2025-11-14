@@ -5,6 +5,7 @@ set_property(
   PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/uac.h")
 
 set(UAC_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/detail/compare.h
     ${CMAKE_CURRENT_SOURCE_DIR}/acquisition.h
     ${CMAKE_CURRENT_SOURCE_DIR}/dataset.h
     ${CMAKE_CURRENT_SOURCE_DIR}/destination_link.h

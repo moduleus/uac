@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.3.1
+
+### C++
+
+#### Bug fixes
+
+Restore `uac/detail/compare.h`.
+
+### MATLAB
+
+#### Bug fixes
+
+Fix validate dataset function.
+
 ## 1.3.0
 
 ### What's new (feature)

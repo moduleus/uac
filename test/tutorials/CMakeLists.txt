@@ -44,7 +44,8 @@ add_executable(t8Acquisition t8_acquisition.cpp helpers.cpp)
 target_link_libraries(t8Acquisition PRIVATE Uac::UacUtils)
 
 add_executable(t9Stream t9_stream.cpp helpers.cpp)
-target_link_libraries(t9Stream PRIVATE Uac::UacUtils)
+target_link_libraries(t9Stream PRIVATE Uac::UacUtils hdf5::hdf5-${HDF5_TYPE}
+                                       hdf5::hdf5_cpp-${HDF5_TYPE})
 
 enable_testing()
 

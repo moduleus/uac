@@ -1,21 +1,5 @@
 include(GenerateExportHeader)
 
-if(WITH_HDF5)
-  option(UAC_HDF5_LINK_SHARED "Link shared or static HDF5 lib"
-         ${BUILD_SHARED_LIBS})
-  if(UAC_HDF5_LINK_SHARED)
-    set(LIB_TYPE SHARED)
-  else()
-    set(LIB_TYPE STATIC)
-  endif()
-  string(TOLOWER ${LIB_TYPE} SEARCH_TYPE)
-  message(STATUS "UacUtils linking hdf5 ${SEARCH_TYPE}")
-
-  if(NOT TARGET hdf5::hdf5-${SEARCH_TYPE})
-    find_package(HDF5 REQUIRED NAMES hdf5 COMPONENTS CXX ${SEARCH_TYPE})
-  endif()
-endif()
-
 set(UAC_UTILS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/clone.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/serialize_helper.cpp
@@ -77,8 +61,8 @@ target_link_libraries(
   PRIVATE Urx::UrxCompilerFlags)
 if(WITH_HDF5)
   target_link_libraries(
-    ${UAC_UTILS_LIBRARY} PRIVATE hdf5::hdf5-${SEARCH_TYPE}
-                                 hdf5::hdf5_cpp-${SEARCH_TYPE})
+    ${UAC_UTILS_LIBRARY} PRIVATE hdf5::hdf5-${HDF5_TYPE}
+                                 hdf5::hdf5_cpp-${HDF5_TYPE})
 endif()
 
 if(NOT CALL_FROM_SETUP_PY)

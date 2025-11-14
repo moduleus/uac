@@ -326,7 +326,7 @@ format:iwyu:
     - cd ..
     - sed -i "s/-Winvalid-pch.*cmake_pch.hxx //g" CI/compile_commands.json
     - iwyu_tool.py -p CI -j $NUM_PARALLEL -- -Xiwyu --no_default_mappings -Xiwyu --mapping_file="$(pwd)/.iwyu-imp" -Xiwyu --no_fwd_decls -Xiwyu --check_also="*uac/matlab/*.h" -Xiwyu --check_also="*uac/python/*.h" -Xiwyu --check_also="*uac/test/*.h" -Xiwyu --check_also="*uac/uac/*.h" > CI/iwyu_tool.log
-    - fix_includes.py --nosafe_headers < CI/iwyu_tool.log
+    - fix_includes.py < CI/iwyu_tool.log
     - find . -type d \( -path "*vcpkg*" -o -name build -o -name install -o -name urx \) -prune -false -o -type f \( -name "*.cpp" -o -name "*.cc" -o -name "*.hpp" -o -name "*.h" \) -exec clang-format-18 --style=file -i {} \;
     - git diff > CI/iwyu.patch
     - cat CI/iwyu.patch
@@ -388,12 +388,14 @@ build:ubuntu-matlab-12.04:
     - cp CI/matlab/binding/libUacMatlabBinding.so CI
   artifacts:
     name: $CI_PROJECT_NAME-$CI_JOB_NAME_SLUG-$CI_JOB_ID
+    when: always
     paths:
       - CI/version.txt
       - CI/libUacMatlabBinding.so
       - CI/matlab/binding/uac-Release.prj
       - CI/matlab/binding/include
       - CI/matlab/binding/+uac
+      - /builds/common/sw/uac/CI/vcpkg_installed/vcpkg/issue_body.md
 
 build:ubuntu-matlab-20.04:
   stage: build
@@ -766,7 +768,7 @@ release:all-python-manylinux2014_x86_64:
     PLAT: manylinux_2_34_x86_64
     # cp36-cp36m;cp37-cp37m: not maintained anymore
     # cp313-cp313t build fails
-    SKIP_PYTHON: cp36-cp36m;cp37-cp37m;cp313-cp313t
+    SKIP_PYTHON: cp36-cp36m;cp37-cp37m;cp313-cp313t;cp314-cp314t
     # ONLY_PYTHON: cp312-cp312
   stage: release
   needs: []
@@ -813,7 +815,7 @@ release:all-python-musllinux_1_2_x86_64:
   variables:
     PLAT: musllinux_1_2_x86_64
     # cp36-cp36m;cp37-cp37m: not maintained anymore
-    SKIP_PYTHON: cp36-cp36m;cp37-cp37m;cp313-cp313t
+    SKIP_PYTHON: cp36-cp36m;cp37-cp37m;cp313-cp313t;cp314-cp314t
     # ONLY_PYTHON: cp312-cp312
     VCPKG_FORCE_SYSTEM_BINARIES: 1
   stage: release
@@ -835,7 +837,6 @@ release:all-python-musllinux_1_2_x86_64:
 
 release:all-python-windows-x64:
   variables:
-    # nh3 needs abi3 and python 3.14t is not compatible with abi3.
     CIBW_BUILD: cp38-win_amd64 cp39-win_amd64 cp310-win_amd64 cp311-win_amd64 cp312-win_amd64 cp313-win_amd64 cp314-win_amd64 pp38-win_amd64 pp39-win_amd64 pp310-win_amd64 pp311-win_amd64
     CIBW_ENABLE: pypy pypy-eol
   stage: release
@@ -869,7 +870,7 @@ release:all-python-windows-x64:
     - $Env:CIBW_CONFIG_SETTINGS = "--global-option=CMAKE_TOOLCHAIN_FILE=$Env:VCPKG_LOCAL_GIT/scripts/buildsystems/vcpkg.cmake --global-option=-DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root=$Env:VCPKG_BUILDTREE $(if (Test-Path -Path "urx" -PathType Container) { "--global-option=-DURX_SRC=urx" } else { "--global-option=-DWITH_VCPKG_URX:BOOL=ON --global-option=-DWITH_PYTHON_WHL:BOOL=ON" }) --global-option=-DBUILD_TESTING:BOOL=ON --global-option=cmake_build_type=Release --global-option=vcpkg_triplet=x64-wssrep --global-option=-DCRT_SHARED_LIBS=OFF"
     - $Env:CIBW_BEFORE_BUILD = "powershell.exe -ExecutionPolicy Bypass -File prebuild.ps1"
     - $Env:CIBW_BEFORE_TEST = "powershell.exe -Command ""`$wheelPath = (Get-ChildItem -Recurse | Where-Object { `$_.Name -match 'ultrasound_rawdata_exchange-.*\.whl' }).FullName; python.exe -m pip install `$wheelPath; Remove-Item -Path `$wheelPath"""
-    - python.exe -m pip install cibuildwheel==3.2.1
+    - python.exe -m pip install cibuildwheel==3.2.1 delvewheel==1.11.2
     - python.exe -m cibuildwheel --output-dir wheelhouse --platform windows
     - *after-script-clean-vcpkg-windows
   artifacts:
@@ -911,7 +912,7 @@ release:all-python-windows-x86:
     - $Env:CIBW_CONFIG_SETTINGS = "--global-option=CMAKE_TOOLCHAIN_FILE=$Env:VCPKG_LOCAL_GIT/scripts/buildsystems/vcpkg.cmake --global-option=-DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root=$Env:VCPKG_BUILDTREE $(if (Test-Path -Path "urx" -PathType Container) { "--global-option=-DURX_SRC=urx" } else { "--global-option=-DWITH_VCPKG_URX:BOOL=ON --global-option=-DWITH_PYTHON_WHL:BOOL=ON" }) --global-option=-DBUILD_TESTING:BOOL=ON --global-option=cmake_build_type=Release --global-option=vcpkg_triplet=x86-wssrep --global-option=-DCRT_SHARED_LIBS=OFF"
     - $Env:CIBW_BEFORE_BUILD = "powershell.exe -ExecutionPolicy Bypass -File prebuild.ps1"
     - $Env:CIBW_BEFORE_TEST = "powershell.exe -Command ""`$wheelPath = (Get-ChildItem -Recurse | Where-Object { `$_.Name -match 'ultrasound_rawdata_exchange-.*\.whl' }).FullName; python.exe -m pip install `$wheelPath; Remove-Item -Path `$wheelPath"""
-    - python.exe -m pip install cibuildwheel==3.2.1
+    - python.exe -m pip install cibuildwheel==3.2.1 delvewheel==1.11.2
     - python.exe -m cibuildwheel --output-dir wheelhouse --platform windows
     - *after-script-clean-vcpkg-windows
   artifacts:
@@ -924,7 +925,7 @@ release:all-python-windows-x86:
 # Can't cross-compile. pybind11 and python/CMakeLists.txt launch python.exe.
 release:all-python-windows-arm64:
   variables:
-    CIBW_BUILD: cp39-win_arm64 cp310-win_arm64 cp311-win_arm64 cp312-win_arm64 cp313-win_arm64
+    CIBW_BUILD: cp39-win_arm64 cp310-win_arm64 cp311-win_arm64 cp312-win_arm64 cp313-win_arm64 cp314-win_arm64
     CIBW_ENABLE: cpython-freethreading
     CIBW_ARCHS: ARM64
   stage: release
@@ -958,7 +959,7 @@ release:all-python-windows-arm64:
     - $Env:CIBW_CONFIG_SETTINGS = "--global-option=CMAKE_TOOLCHAIN_FILE=$Env:VCPKG_LOCAL_GIT/scripts/buildsystems/vcpkg.cmake --global-option=-DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root=$Env:VCPKG_BUILDTREE $(if (Test-Path -Path "urx" -PathType Container) { "--global-option=-DURX_SRC=urx" } else { "--global-option=-DWITH_VCPKG_URX:BOOL=ON --global-option=-DWITH_PYTHON_WHL:BOOL=ON" }) --global-option=-DBUILD_TESTING:BOOL=ON --global-option=cmake_build_type=Release --global-option=vcpkg_triplet=arm64-wssrep --global-option=-DCRT_SHARED_LIBS=OFF"
     - $Env:CIBW_BEFORE_BUILD = "powershell.exe -ExecutionPolicy Bypass -File prebuild.ps1"
     - $Env:CIBW_BEFORE_TEST = "powershell.exe -Command ""`$wheelPath = (Get-ChildItem -Recurse | Where-Object { `$_.Name -match 'ultrasound_rawdata_exchange-.*\.whl' }).FullName; python.exe -m pip install `$wheelPath; Remove-Item -Path `$wheelPath"""
-    - python.exe -m pip install cibuildwheel==3.2.1
+    - python.exe -m pip install cibuildwheel==3.2.1 delvewheel==1.11.2
     - python.exe -m cibuildwheel --output-dir wheelhouse --platform windows
     - *after-script-clean-vcpkg-windows
   artifacts:

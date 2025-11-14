@@ -330,7 +330,7 @@ template <class... Ts>
 Overload(Ts...) -> Overload<Ts...>;
 
 // NOLINTBEGIN(misc-redundant-expression)
-PYBIND11_MODULE(bindings, m) {
+PYBIND11_MODULE(bindings, m, py::mod_gil_not_used()) {
   m.doc() = "Python binding of urx library";
 
   const py::module_ purx = py::module_::import("ultrasound_rawdata_exchange");
