@@ -168,6 +168,7 @@ if urx_src_arg is not None:
     cmake_configure_options.append(f"{urx_src_arg}")
 elif DISABLE_VCPKG_arg is None:
     cmake_configure_options.append("-DWITH_VCPKG_URX:BOOL=ON")
+    cmake_configure_options.append("-DVCPKG_CMAKE_CONFIGURE_OPTIONS=--trace-expand")
 
 d_arg = next((arg for arg in sys.argv if arg.startswith("-D")), None)
 while d_arg:

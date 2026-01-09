@@ -24,9 +24,9 @@ struct IGroup {
 
   virtual ~IGroup() = 0;
 
-  bool operator!=(const IGroup& other) const { return !operator==(other); }
+  virtual bool operator!=(const IGroup& other) const { return !operator==(other); }
 
-  bool secureComparison(
+  virtual bool secureComparison(
       const IGroup& other,
       std::vector<std::pair<const void*, const void*>>& already_compared_obj) const;
 

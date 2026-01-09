@@ -54,7 +54,7 @@ endif()
 
 project(
   Uac
-  VERSION 1.3.1
+  VERSION 1.3.2
   LANGUAGES C CXX
   DESCRIPTION "Ultrasound Acquisition Configuration format C++ implementation")
 
@@ -147,7 +147,7 @@ if(WITH_PYTHON AND (NOT TARGET pybind11::pybind11 OR NOT TARGET Python3::Module
                    ))
   set(PYTHON_IS_DEBUG OFF)
   if(DEFINED ENV{VCPKG_Python3_EXECUTABLE} AND NOT DEFINED Python3_EXECUTABLE)
-    set(Python3_EXECUTABLE ENV{VCPKG_Python3_EXECUTABLE})
+    set(Python3_EXECUTABLE $ENV{VCPKG_Python3_EXECUTABLE})
   endif()
 
   find_package(

@@ -93,36 +93,42 @@ variables:
 
 .python-venv-windows: &python-venv-windows
   - $Env:CMAKE_BUILD_PARALLEL_LEVEL=$NUM_PARALLEL
-  - python.exe -m venv .venv
-  - ./.venv/Scripts/Activate.ps1
-  - $Env:VCPKG_Python3_EXECUTABLE=$((Get-Location).Path + "\.venv\Scripts\python.exe")
+  - $PYTHON_VERSION = python.exe -c 'import sys; version=sys.version_info[:3]; print("{0}.{1}.{2}".format(*version))'
+  - python.exe -m venv .venv-$PYTHON_VERSION
+  - |
+    &./.venv-$PYTHON_VERSION/Scripts/Activate.ps1
+  - $Env:VCPKG_Python3_EXECUTABLE=$((Get-Location).Path + "\.venv-$PYTHON_VERSION\Scripts\python.exe")
   - python.exe -m ensurepip
   - python.exe -m pip install --upgrade pip
   - python.exe -m pip install -r requirements-gitlab.txt
 
 .python-venv-windows-d: &python-venv-windows-d
   - $Env:CMAKE_BUILD_PARALLEL_LEVEL=$NUM_PARALLEL
-  - python_d.exe -m venv .venv
-  - ./.venv/Scripts/Activate.ps1
-  - $Env:VCPKG_Python3_EXECUTABLE=$((Get-Location).Path + "\.venv\Scripts\python.exe")
+  - $PYTHON_VERSION = python_d.exe -c 'import sys; version=sys.version_info[:3]; print("{0}.{1}.{2}".format(*version))'
+  - python_d.exe -m venv .venv-$PYTHON_VERSION
+  - |
+    &./.venv-$PYTHON_VERSION/Scripts/Activate.ps1
+  - $Env:VCPKG_Python3_EXECUTABLE=$((Get-Location).Path + "\.venv-$PYTHON_VERSION\Scripts\python.exe")
   - python_d.exe -m ensurepip
   - python_d.exe -m pip install --upgrade pip
   - python_d.exe -m pip install -r requirements-gitlab.txt
 
 .python-venv-linux: &python-venv-linux
   - export CMAKE_BUILD_PARALLEL_LEVEL=$NUM_PARALLEL
-  - python -m venv .venv
-  - source .venv/bin/activate
-  - export VCPKG_Python3_EXECUTABLE=$(pwd)/.venv/bin/python
+  - PYTHON_VERSION=`python -c 'import sys; version=sys.version_info[:3]; print("{0}.{1}.{2}".format(*version))'`
+  - python -m venv .venv-${PYTHON_VERSION}
+  - source .venv-${PYTHON_VERSION}/bin/activate
+  - export VCPKG_Python3_EXECUTABLE=$(pwd)/.venv-${PYTHON_VERSION}/bin/python
   - python -m ensurepip
   - python -m pip install --upgrade pip
   - python -m pip install -r requirements-gitlab.txt
 
 .python-venv-linux-d: &python-venv-linux-d
   - export CMAKE_BUILD_PARALLEL_LEVEL=$NUM_PARALLEL
-  - python3d -m venv .venv
-  - source .venv/bin/activate
-  - export VCPKG_Python3_EXECUTABLE=$(pwd)/.venv/bin/python3
+  - PYTHON_VERSION=`python3d -c 'import sys; version=sys.version_info[:3]; print("{0}.{1}.{2}".format(*version))'`
+  - python3d -m venv .venv-${PYTHON_VERSION}
+  - source .venv-${PYTHON_VERSION}/bin/activate
+  - export VCPKG_Python3_EXECUTABLE=$(pwd)/.venv-${PYTHON_VERSION}/bin/python3
   - python3d -m ensurepip
   - python3d -m pip install --upgrade pip
   - python3d -m pip install -r requirements-gitlab.txt
@@ -783,10 +789,16 @@ release:all-python-manylinux2014_x86_64:
   script:
     - sed -i 's/\r//' .ci/manylinux_vcpkg.sh
     - sh .ci/manylinux_vcpkg.sh ultrasound_acquisition_configuration
+  after_script:
+    - mkdir vcpkg_log
+    - cp --parents /cache/vcpkg-git/buildtrees/*/*.log vcpkg_log
+    - cp --parents /builds/common/sw/uac/build/*/vcpkg_installed/vcpkg/issue_body.md vcpkg_log
   artifacts:
     name: $CI_PROJECT_NAME-$CI_JOB_NAME_SLUG-$CI_JOB_ID
+    when: always
     paths:
       - ultrasound_acquisition_configuration*manylinux*.whl
+      - vcpkg_log
 
 release:all-python-manylinux_2_28_x86_64:
   variables:
@@ -830,14 +842,21 @@ release:all-python-musllinux_1_2_x86_64:
     - *before-script-vcpkg-linux
   script:
     - sh .ci/manylinux_vcpkg.sh ultrasound_acquisition_configuration
+  after_script:
+    - mkdir vcpkg_log
+    - cp --parents /cache/vcpkg-git/buildtrees/*/*.log vcpkg_log
+    - cp --parents /builds/common/sw/uac/build/*/vcpkg_installed/vcpkg/issue_body.md vcpkg_log
   artifacts:
     name: $CI_PROJECT_NAME-$CI_JOB_NAME_SLUG-$CI_JOB_ID
+    when: always
     paths:
       - ultrasound_acquisition_configuration*musllinux*.whl
+      - vcpkg_log
 
 release:all-python-windows-x64:
   variables:
-    CIBW_BUILD: cp38-win_amd64 cp39-win_amd64 cp310-win_amd64 cp311-win_amd64 cp312-win_amd64 cp313-win_amd64 cp314-win_amd64 pp38-win_amd64 pp39-win_amd64 pp310-win_amd64 pp311-win_amd64
+    CIBW_BUILD: cp*-win_amd64 pp*-win_amd64
+    CIBW_SKIP: "cp3??t-*"
     CIBW_ENABLE: pypy pypy-eol
   stage: release
   needs: []
@@ -856,21 +875,21 @@ release:all-python-windows-x64:
     - rm Env:VCPKG_Python3_EXECUTABLE
     - |
       $contentToAdd = @"
+        pip install -r requirements-gitlab.txt
         if (Test-Path -PathType Container -Path "urx") {
-          Remove-Item -Recurse -Force CI
+          if (Test-Path "CI") { Remove-Item -Recurse -Force "CI" }
           Get-ChildItem -Path . -Filter ultrasound_rawdata_exchange*.whl -Recurse | Remove-Item -Force
           if (Test-Path -PathType Container -Path "urx/vcpkg-registry") {Remove-Item -LiteralPath "urx/vcpkg-registry" -Force -Recurse}
           Copy-Item -Path vcpkg-registry -Destination urx -Recurse
           cmake.exe -S urx -B CI -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="`$Env:VCPKG_LOCAL_GIT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-wssrep -DVCPKG_HOST_TRIPLET=x64-wssrep -DVCPKG_OVERLAY_TRIPLETS=vcpkg-registry/triplets -DCMAKE_INSTALL_PREFIX="install/windows-with-HDF5-static" -DBUILD_SHARED_LIBS=OFF -DCRT_SHARED_LIBS:BOOL=OFF -DWITH_HDF5=ON -DBUILD_TESTING=ON -DWITH_PYTHON:BOOL=ON -DWITH_PYTHON_WHL:BOOL=ON -DWITH_MATLAB:BOOL=OFF -DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root="`$Env:VCPKG_BUILDTREE"
           cmake.exe --build CI --config Release --target UrxPythonWheel -- /p:CL_MPcount=`$NUM_PARALLEL
         }
-        pip install -r requirements-gitlab.txt
       "@
       Add-Content "prebuild.ps1" $contentToAdd
     - $Env:CIBW_CONFIG_SETTINGS = "--global-option=CMAKE_TOOLCHAIN_FILE=$Env:VCPKG_LOCAL_GIT/scripts/buildsystems/vcpkg.cmake --global-option=-DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root=$Env:VCPKG_BUILDTREE $(if (Test-Path -Path "urx" -PathType Container) { "--global-option=-DURX_SRC=urx" } else { "--global-option=-DWITH_VCPKG_URX:BOOL=ON --global-option=-DWITH_PYTHON_WHL:BOOL=ON" }) --global-option=-DBUILD_TESTING:BOOL=ON --global-option=cmake_build_type=Release --global-option=vcpkg_triplet=x64-wssrep --global-option=-DCRT_SHARED_LIBS=OFF"
     - $Env:CIBW_BEFORE_BUILD = "powershell.exe -ExecutionPolicy Bypass -File prebuild.ps1"
     - $Env:CIBW_BEFORE_TEST = "powershell.exe -Command ""`$wheelPath = (Get-ChildItem -Recurse | Where-Object { `$_.Name -match 'ultrasound_rawdata_exchange-.*\.whl' }).FullName; python.exe -m pip install `$wheelPath; Remove-Item -Path `$wheelPath"""
-    - python.exe -m pip install cibuildwheel==3.2.1 delvewheel==1.11.2
+    - python.exe -m pip install cibuildwheel==3.3.1 delvewheel==1.11.2
     - python.exe -m cibuildwheel --output-dir wheelhouse --platform windows
     - *after-script-clean-vcpkg-windows
   artifacts:
@@ -898,21 +917,21 @@ release:all-python-windows-x86:
     - rm Env:VCPKG_Python3_EXECUTABLE
     - |
       $contentToAdd = @"
+        pip install -r requirements-gitlab.txt
         if (Test-Path -PathType Container -Path "urx") {
-          Remove-Item -Recurse -Force CI
+          if (Test-Path "CI") { Remove-Item -Recurse -Force "CI" }
           Get-ChildItem -Path . -Filter ultrasound_rawdata_exchange*.whl -Recurse | Remove-Item -Force
           if (Test-Path -PathType Container -Path "urx/vcpkg-registry") {Remove-Item -LiteralPath "urx/vcpkg-registry" -Force -Recurse}
           Copy-Item -Path vcpkg-registry -Destination urx -Recurse
           cmake.exe -S urx -B CI -G "Visual Studio 17 2022" -A Win32 -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="`$Env:VCPKG_LOCAL_GIT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x86-wssrep -DVCPKG_HOST_TRIPLET=x86-wssrep -DVCPKG_OVERLAY_TRIPLETS=vcpkg-registry/triplets -DCMAKE_INSTALL_PREFIX="install/windows-with-HDF5-static" -DBUILD_SHARED_LIBS=OFF -DCRT_SHARED_LIBS:BOOL=OFF -DWITH_HDF5=ON -DBUILD_TESTING=ON -DWITH_PYTHON:BOOL=ON -DWITH_PYTHON_WHL:BOOL=ON -DWITH_MATLAB:BOOL=OFF -DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root="`$Env:VCPKG_BUILDTREE"
           cmake.exe --build CI --config Release --target UrxPythonWheel -- /p:CL_MPcount=`$NUM_PARALLEL
         }
-        pip install -r requirements-gitlab.txt
       "@
       Add-Content "prebuild.ps1" $contentToAdd
     - $Env:CIBW_CONFIG_SETTINGS = "--global-option=CMAKE_TOOLCHAIN_FILE=$Env:VCPKG_LOCAL_GIT/scripts/buildsystems/vcpkg.cmake --global-option=-DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root=$Env:VCPKG_BUILDTREE $(if (Test-Path -Path "urx" -PathType Container) { "--global-option=-DURX_SRC=urx" } else { "--global-option=-DWITH_VCPKG_URX:BOOL=ON --global-option=-DWITH_PYTHON_WHL:BOOL=ON" }) --global-option=-DBUILD_TESTING:BOOL=ON --global-option=cmake_build_type=Release --global-option=vcpkg_triplet=x86-wssrep --global-option=-DCRT_SHARED_LIBS=OFF"
     - $Env:CIBW_BEFORE_BUILD = "powershell.exe -ExecutionPolicy Bypass -File prebuild.ps1"
     - $Env:CIBW_BEFORE_TEST = "powershell.exe -Command ""`$wheelPath = (Get-ChildItem -Recurse | Where-Object { `$_.Name -match 'ultrasound_rawdata_exchange-.*\.whl' }).FullName; python.exe -m pip install `$wheelPath; Remove-Item -Path `$wheelPath"""
-    - python.exe -m pip install cibuildwheel==3.2.1 delvewheel==1.11.2
+    - python.exe -m pip install cibuildwheel==3.3.1 delvewheel==1.11.2
     - python.exe -m cibuildwheel --output-dir wheelhouse --platform windows
     - *after-script-clean-vcpkg-windows
   artifacts:
@@ -925,7 +944,7 @@ release:all-python-windows-x86:
 # Can't cross-compile. pybind11 and python/CMakeLists.txt launch python.exe.
 release:all-python-windows-arm64:
   variables:
-    CIBW_BUILD: cp39-win_arm64 cp310-win_arm64 cp311-win_arm64 cp312-win_arm64 cp313-win_arm64 cp314-win_arm64
+    CIBW_BUILD: "none"
     CIBW_ENABLE: cpython-freethreading
     CIBW_ARCHS: ARM64
   stage: release
@@ -945,21 +964,21 @@ release:all-python-windows-arm64:
     - rm Env:VCPKG_Python3_EXECUTABLE
     - |
       $contentToAdd = @"
+        pip install -r requirements-gitlab.txt
         if (Test-Path -PathType Container -Path "urx") {
-          Remove-Item -Recurse -Force CI
+          if (Test-Path "CI") { Remove-Item -Recurse -Force "CI" }
           Get-ChildItem -Path . -Filter ultrasound_rawdata_exchange*.whl -Recurse | Remove-Item -Force
           if (Test-Path -PathType Container -Path "urx/vcpkg-registry") {Remove-Item -LiteralPath "urx/vcpkg-registry" -Force -Recurse}
           Copy-Item -Path vcpkg-registry -Destination urx -Recurse
           cmake.exe -S urx -B CI -G "Visual Studio 17 2022" -A ARM64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="`$Env:VCPKG_LOCAL_GIT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=arm64-wssrep -DVCPKG_HOST_TRIPLET=arm64-wssrep -DVCPKG_OVERLAY_TRIPLETS=vcpkg-registry/triplets -DCMAKE_INSTALL_PREFIX="install/windows-with-HDF5-static" -DBUILD_SHARED_LIBS=OFF -DCRT_SHARED_LIBS:BOOL=OFF -DWITH_HDF5=ON -DBUILD_TESTING=ON -DWITH_PYTHON:BOOL=ON -DWITH_PYTHON_WHL:BOOL=ON -DWITH_MATLAB:BOOL=OFF -DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root="`$Env:VCPKG_BUILDTREE"
           cmake.exe --build CI --config Release --target UrxPythonWheel -- /p:CL_MPcount=`$NUM_PARALLEL
         }
-        pip install -r requirements-gitlab.txt
       "@
       Add-Content "prebuild.ps1" $contentToAdd
     - $Env:CIBW_CONFIG_SETTINGS = "--global-option=CMAKE_TOOLCHAIN_FILE=$Env:VCPKG_LOCAL_GIT/scripts/buildsystems/vcpkg.cmake --global-option=-DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root=$Env:VCPKG_BUILDTREE $(if (Test-Path -Path "urx" -PathType Container) { "--global-option=-DURX_SRC=urx" } else { "--global-option=-DWITH_VCPKG_URX:BOOL=ON --global-option=-DWITH_PYTHON_WHL:BOOL=ON" }) --global-option=-DBUILD_TESTING:BOOL=ON --global-option=cmake_build_type=Release --global-option=vcpkg_triplet=arm64-wssrep --global-option=-DCRT_SHARED_LIBS=OFF"
     - $Env:CIBW_BEFORE_BUILD = "powershell.exe -ExecutionPolicy Bypass -File prebuild.ps1"
     - $Env:CIBW_BEFORE_TEST = "powershell.exe -Command ""`$wheelPath = (Get-ChildItem -Recurse | Where-Object { `$_.Name -match 'ultrasound_rawdata_exchange-.*\.whl' }).FullName; python.exe -m pip install `$wheelPath; Remove-Item -Path `$wheelPath"""
-    - python.exe -m pip install cibuildwheel==3.2.1 delvewheel==1.11.2
+    - python.exe -m pip install cibuildwheel==3.3.1 delvewheel==1.11.2
     - python.exe -m cibuildwheel --output-dir wheelhouse --platform windows
     - *after-script-clean-vcpkg-windows
   artifacts:

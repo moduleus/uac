@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.2
+
+### C++
+
+#### Bug fixes
+
+Comparison between two `IGroup` also need to compare fields from `Group` / `SuperGroup`.
+
 ## 1.3.1
 
 ### C++
