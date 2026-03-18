@@ -44,6 +44,14 @@ if(DEFINED Python3_EXECUTABLE)
   set(ENV{VCPKG_Python3_EXECUTABLE} ${Python3_EXECUTABLE})
 endif()
 
+option(
+  BINARY_DISTRIB
+  "Statically link all private 3rd-party and dynamically link public 3rd-party against the system versions."
+  OFF)
+if(BINARY_DISTRIB)
+  list(APPEND VCPKG_MANIFEST_FEATURES "use-system-libs")
+endif()
+
 # Windows only
 option(CRT_SHARED_LIBS "Build using CRT shared libraries" ON)
 
@@ -54,7 +62,7 @@ endif()
 
 project(
   Uac
-  VERSION 1.3.2
+  VERSION 1.4.0
   LANGUAGES C CXX
   DESCRIPTION "Ultrasound Acquisition Configuration format C++ implementation")
 
@@ -137,7 +145,13 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
 set(CPACK_PACKAGE_VERSION_MAJOR "${${PROJECT_NAME}_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${${PROJECT_NAME}_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${${PROJECT_NAME}_VERSION_PATCH}")
-set(CPACK_SOURCE_GENERATOR "ZIP")
+set(CPACK_GENERATOR "DEB")
+set(CPACK_SOURCE_GENERATOR "")
+set(CPACK_PACKAGE_VENDOR "Moduleus")
+set(CPACK_PACKAGE_CONTACT "security@moduleus.com")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libhdf5-dev, urx")
+set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
+string(TOLOWER ${PROJECT_NAME} CPACK_PACKAGE_NAME)
 
 if(NOT CPack_CMake_INCLUDED EQUAL 1)
   include(CPack)
@@ -228,8 +242,14 @@ if(WITH_HDF5)
   string(TOLOWER ${LIB_TYPE} HDF5_TYPE)
   message(STATUS "UacUtils linking hdf5 ${HDF5_TYPE}")
 
-  if(NOT TARGET hdf5::hdf5-${HDF5_TYPE})
-    find_package(HDF5 REQUIRED NAMES hdf5 COMPONENTS CXX ${HDF5_TYPE})
+  if(BINARY_DISTRIB)
+    find_package(HDF5 REQUIRED MODULE COMPONENTS CXX)
+    set(HDF5_TARGET HDF5::HDF5)
+  else()
+    if(NOT TARGET hdf5::hdf5-${HDF5_TYPE})
+      find_package(HDF5 REQUIRED NAMES hdf5 COMPONENTS CXX ${HDF5_TYPE})
+    endif()
+    set(HDF5_TARGET hdf5::hdf5-${HDF5_TYPE} hdf5::hdf5_cpp-${HDF5_TYPE})
   endif()
 else()
   set(UAC_HDF5_LINK_SHARED ${BUILD_SHARED_LIBS})
@@ -253,6 +273,12 @@ endif()
 add_subdirectory("uac")
 
 if(WITH_MATLAB)
+  if(BINARY_DISTRIB AND WITH_HDF5)
+    message(
+      FATAL_ERROR
+        "Official distribution doesn't support MATLAB with HDF5. With MATLAB, you need to use HDF5 1.8."
+    )
+  endif()
   add_subdirectory(matlab)
   if(NOT URX_SRC STREQUAL "")
     add_dependencies(UacMatlabBinding UrxMatlabBinding)

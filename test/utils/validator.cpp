@@ -26,17 +26,17 @@ TEST_CASE("Test Dataset check with urx Validator", "[dataset][helper]") {
   UrxValidatorReport validator;
   validator.check(*dataset);
 
-  REQUIRE(validator.getOutput().size() == 9);
+  REQUIRE(validator.getOutput().size() == 8);
 
   dataset = utils::test::generateFakeDataset<Dataset>();
   validator.check(*dataset);
 
-  REQUIRE(validator.getOutput().size() == 67);
+  REQUIRE(validator.getOutput().size() == 76);
 
   dataset = utils::test::generateWrongDataset<Dataset>();
   validator.check(*dataset);
 
-  REQUIRE(validator.getOutput().size() == 150);
+  REQUIRE(validator.getOutput().size() == 159);
 }
 
 TEST_CASE("Test Dataset check with uac Validator", "[dataset][helper]") {
@@ -46,17 +46,17 @@ TEST_CASE("Test Dataset check with uac Validator", "[dataset][helper]") {
   ValidatorReport validator;
   validator.check(*dataset);
 
-  REQUIRE(validator.getOutput().size() == 10);
+  REQUIRE(validator.getOutput().size() == 9);
 
   dataset = utils::test::generateFakeDataset<Dataset>();
   validator.check(*dataset);
 
-  REQUIRE(validator.getOutput().size() == 81);
+  REQUIRE(validator.getOutput().size() == 90);
 
   dataset = utils::test::generateWrongDataset<Dataset>();
   validator.check(*dataset);
 
-  REQUIRE(validator.getOutput().size() == 164);
+  REQUIRE(validator.getOutput().size() == 173);
 }
 
 }  // namespace uac::utils::validator::test

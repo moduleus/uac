@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.4.0
+
+### C++
+
+#### What's new (improvement)
+
+Improve conditions in uac validator.
+
+Add .deb packages for Ubuntu 24.04.
+
+#### Bug fixes
+
+Rename `OPTIONAL` enum to `OPT` to avoid conflict with `#include <windows.h>`.
+
+### Python
+
+#### Bug fixes
+
+Fix `transmit_setup.excitations` that was immutable.
+
 ## 1.3.2
 
 ### C++

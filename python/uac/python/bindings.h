@@ -12,6 +12,7 @@
 #include <urx/element_geometry.h>
 #include <urx/impulse_response.h>
 #include <urx/probe.h>
+#include <urx/python/bindings.h>
 #include <urx/vector.h>
 
 #include <uac/destination_link.h>
@@ -51,6 +52,7 @@ using VecElementGeometryPtr = std::vector<std::shared_ptr<uac::ElementGeometry>>
 using VecImpulseResponsePtr = std::vector<std::shared_ptr<uac::ImpulseResponse>>;
 using VecElement = std::vector<uac::Element>;
 using VecExcitationPtr = std::vector<std::shared_ptr<uac::Excitation>>;
+using VecWeakExcitationPtr = urx::python::detail::ProxyVectorWeakList<uac::Excitation>;
 using VecEvent = std::vector<uac::Event>;
 using VecProbePtr = std::vector<std::shared_ptr<uac::Probe>>;
 using VecSuperGroupPtr = std::vector<std::shared_ptr<uac::SuperGroup>>;
@@ -64,6 +66,7 @@ using MapHwConfig = uac::HwConfig::Values;
 PYBIND11_MAKE_OPAQUE(uac::python::VecGroupPtr);
 
 PYBIND11_MAKE_OPAQUE(uac::python::VecExcitationPtr);
+PYBIND11_MAKE_OPAQUE(uac::python::VecWeakExcitationPtr);
 PYBIND11_MAKE_OPAQUE(uac::python::VecEvent);
 PYBIND11_MAKE_OPAQUE(uac::python::VecSuperGroupPtr);
 PYBIND11_MAKE_OPAQUE(uac::python::VecDestinationLink);

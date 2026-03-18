@@ -113,7 +113,7 @@ class ValidatorBase : public urx::utils::ValidatorBase<Derived, Dataset> {
   void check(std::optional<TriggerIn>& trigger, const std::string& identifier_message_prefix = "") {
     if (trigger.has_value() && trigger->edge == uac::Edge::UNDEFINED) {
       static_cast<Derived*>(this)->valueNotSet(
-          trigger->edge, identifier_message_prefix + "TriggerIn Edge not set.");
+          trigger->edge, identifier_message_prefix + "TriggerIn Edge is not set.");
     }
   }
 
@@ -122,29 +122,21 @@ class ValidatorBase : public urx::utils::ValidatorBase<Derived, Dataset> {
     if (trigger.has_value()) {
       if (trigger->polarity == uac::Polarity::UNDEFINED) {
         static_cast<Derived*>(this)->valueNotSet(
-            trigger->polarity, identifier_message_prefix + "TriggerOut Polarity not set.");
+            trigger->polarity, identifier_message_prefix + "TriggerOut Polarity is not set.");
       }
 
-      if (std::isnan(trigger->time_offset)) {
-        static_cast<Derived*>(this)->valueNotSet(trigger->time_offset,
-                                                 "Time offset: Value is not set.");
-      }
-
-      if (trigger->time_offset < 0) {
+      if (std::isnan(trigger->time_offset) || trigger->time_offset < 0) {
         static_cast<Derived*>(this)->valueNotPositive(
             trigger->time_offset,
-            "Time offset: Value is not set correctly. Value must be positive or zero.");
+            identifier_message_prefix +
+                "Time offset: Value is not set correctly. Value must be positive or zero.");
       }
 
-      if (std::isnan(trigger->pulse_duration)) {
-        static_cast<Derived*>(this)->valueNotSet(trigger->pulse_duration,
-                                                 "Pulse duration: Value is not set.");
-      }
-
-      if (trigger->pulse_duration < 0) {
+      if (std::isnan(trigger->pulse_duration) || trigger->pulse_duration < 0) {
         static_cast<Derived*>(this)->valueNotPositive(
             trigger->pulse_duration,
-            "Pulse duration: Value is not set correctly. Value must be positive or zero.");
+            identifier_message_prefix +
+                "Pulse duration: Value is not set correctly. Value must be positive or zero.");
       }
     }
   }
@@ -153,24 +145,17 @@ class ValidatorBase : public urx::utils::ValidatorBase<Derived, Dataset> {
     check(igroup.trigger_in, identifier_message_prefix + "TriggerIn :");
     check(igroup.trigger_out, identifier_message_prefix + "TriggerOut :");
 
-    if (std::isnan(igroup.time_offset)) {
-      static_cast<Derived*>(this)->valueNotSet(igroup.time_offset,
-                                               "Time offset: Value is not set.");
-    }
-
-    if (igroup.time_offset < 0) {
+    if (std::isnan(igroup.time_offset) || igroup.time_offset < 0) {
       static_cast<Derived*>(this)->valueNotPositive(
           igroup.time_offset,
-          "Time offset: Value is not set correctly. Value must be positive or zero.");
+          identifier_message_prefix +
+              "Time offset: Value is not set correctly. Value must be positive or zero.");
     }
 
-    if (std::isnan(igroup.period)) {
-      static_cast<Derived*>(this)->valueNotSet(igroup.period, "Period: Value is not set.");
-    }
-
-    if (igroup.period < 0) {
+    if (std::isnan(igroup.period) || igroup.period < 0) {
       static_cast<Derived*>(this)->valueNotPositive(
-          igroup.period, "Period: Value is not set correctly. Value must be positive or zero.");
+          igroup.period, identifier_message_prefix +
+                             "Period: Value is not set correctly. Value must be positive or zero.");
     }
   }
 
@@ -181,14 +166,11 @@ class ValidatorBase : public urx::utils::ValidatorBase<Derived, Dataset> {
     check(event.trigger_in, identifier_message_prefix + "TriggerIn :");
     check(event.trigger_out, identifier_message_prefix + "TriggerOut :");
 
-    if (std::isnan(event.time_offset)) {
-      static_cast<Derived*>(this)->valueNotSet(event.time_offset, "Time offset: Value is not set.");
-    }
-
-    if (event.time_offset < 0) {
+    if (std::isnan(event.time_offset) || event.time_offset < 0) {
       static_cast<Derived*>(this)->valueNotPositive(
           event.time_offset,
-          "Time offset: Value is not set correctly. Value must be positive or zero.");
+          identifier_message_prefix +
+              "Time offset: Value is not set correctly. Value must be positive or zero.");
     }
   }
 };

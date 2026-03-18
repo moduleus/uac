@@ -12,6 +12,7 @@ __pycache__
 # IDE dir
 .vs/
 .vscode/
+.cache/
 
 *.swp
 

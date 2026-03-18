@@ -60,9 +60,7 @@ target_link_libraries(
   PUBLIC Uac::Uac Urx::UrxUtils
   PRIVATE Urx::UrxCompilerFlags)
 if(WITH_HDF5)
-  target_link_libraries(
-    ${UAC_UTILS_LIBRARY} PRIVATE hdf5::hdf5-${HDF5_TYPE}
-                                 hdf5::hdf5_cpp-${HDF5_TYPE})
+  target_link_libraries(${UAC_UTILS_LIBRARY} PRIVATE ${HDF5_TARGET})
 endif()
 
 if(NOT CALL_FROM_SETUP_PY)

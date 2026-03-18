@@ -68,7 +68,7 @@ uac::IGroup *getIGroupPtr(const Container &container) {
                        urx::utils::ContainerType::WEAK_PTR) {
     return container.lock().get();
   } else if constexpr (urx::utils::TypeContainer<Container>::VALUE ==
-                       urx::utils::ContainerType::OPTIONAL) {
+                       urx::utils::ContainerType::OPT) {
     return container ? &(*container) : nullptr;
   } else {
     throw std::runtime_error(__FUNCTION__);

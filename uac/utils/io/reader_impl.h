@@ -233,8 +233,7 @@ class ReaderBase
   }
 
   template <typename T>
-  typename std::enable_if_t<urx::utils::TypeContainer<T>::VALUE ==
-                            urx::utils::ContainerType::OPTIONAL>
+  typename std::enable_if_t<urx::utils::TypeContainer<T>::VALUE == urx::utils::ContainerType::OPT>
   deserializeHdf5(const std::string& name, T& field, const H5::Group& group) {
     urx::utils::io::ReaderBase<
         Dataset, AllTypeInVariant,

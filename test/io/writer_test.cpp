@@ -11,9 +11,12 @@
 
 #include <urx/dataset.h>
 #include <urx/detail/compare.h>
+#include <urx/detail/double_nan.h>
+#include <urx/element.h>
 #include <urx/probe.h>
 #include <urx/transform.h>
 #include <urx/utils/exception.h>
+#include <urx/utils/io/h5_hash.h>
 #include <urx/utils/io/writer_options.h>
 
 #include <uac/acquisition.h>
@@ -22,6 +25,7 @@
 #include <uac/event.h>
 #include <uac/excitation.h>
 #include <uac/group.h>
+#include <uac/igroup.h>
 #include <uac/receive_setup.h>
 #include <uac/super_group.h>
 #include <uac/transmit_setup.h>
@@ -77,6 +81,59 @@ TEST_CASE("Write HDF5 file", "[hdf5_writer][hdf5_reader]") {
   REQUIRE(urx::valueComparison(dataset_loaded->acquisition.groups, dataset->acquisition.groups));
 
   REQUIRE(*dataset_loaded == *dataset);
+}
+
+TEST_CASE("Compare HDF5 file hash", "[hdf5_writer][hdf5_hash]") {
+  std::vector<std::shared_ptr<Dataset>> dataset_vec;
+  constexpr size_t size = 13;
+  dataset_vec.reserve(size);
+  for (size_t i = 0; i < size; ++i) {
+    dataset_vec.emplace_back(uac::utils::test::generateFakeDataset<Dataset>());
+  }
+  dataset_vec[2]->acquisition.description += "bis";
+
+  dataset_vec[3]->acquisition.timestamp += 2;
+
+  dataset_vec[4]->acquisition.timestamp = urx::DoubleNan::URX_NAN;
+
+  dataset_vec[5]->acquisition.excitations.emplace_back(std::make_shared<Excitation>());
+
+  dataset_vec[6]->acquisition.excitations.back()->waveform = {1., 2., 3., 4., 5.,
+                                                              6., 7., 8., 9., 10.};
+
+  dataset_vec[7]->acquisition.excitations.back()->pulse_shape += "bis";
+
+  dataset_vec[8]->acquisition.excitations.back()->sampling_frequency += 2;
+
+  dataset_vec[9]->acquisition.excitations.back()->sampling_frequency = urx::DoubleNan::URX_NAN;
+
+  dataset_vec[10]->acquisition.super_groups.push_back(std::make_shared<SuperGroup>());
+
+  dataset_vec[11]->acquisition.super_groups.front()->initial_group = std::weak_ptr<IGroup>();
+
+  dataset_vec[12]->acquisition.probes[1]->elements[1].impulse_response =
+      dataset_vec[12]->acquisition.probes[1]->impulse_responses[0];
+
+  const bool clean_unusable_data = GENERATE(true, false);
+
+  urx::utils::io::WriterOptions options;
+
+  options.setCleanUnusableData(clean_unusable_data);
+  options.setCheckData(false);
+
+  std::vector<std::string> filename_vec(size);
+  std::vector<uint64_t> hash_vec(size);
+
+  for (size_t i = 0; i < size; ++i) {
+    filename_vec[i] = "hash_file-" + std::to_string(i) + ".uac";
+    writer::saveToFile(filename_vec[i], *dataset_vec[i], options);
+    hash_vec[i] = urx::utils::io::hashH5File(filename_vec[i]);
+  }
+
+  REQUIRE(hash_vec[0] == hash_vec[1]);
+  for (size_t i = 0; i < size - 2; ++i) {
+    REQUIRE(hash_vec[0] != hash_vec[2 + i]);
+  }
 }
 
 TEST_CASE("Write HDF5 file containing unusable data", "[hdf5_writer][hdf5_reader]") {

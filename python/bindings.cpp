@@ -75,6 +75,7 @@ namespace urx::python::detail {
 
 namespace {
 constexpr const char VEC_EXCITATION_PTR[] = "VecExcitationPtr";
+constexpr const char VEC_WEAK_EXCITATION_PTR[] = "VecWeakExcitationPtr";
 constexpr const char VEC_EVENT[] = "VecEvent";
 constexpr const char VEC_GROUP_PTR[] = "VecGroupPtr";
 constexpr const char VEC_SUPER_GROUP_PTR[] = "VecSuperGroupPtr";
@@ -83,28 +84,37 @@ constexpr const char VEC_HW_CONFIG[] = "VecHwConfig";
 }  // namespace
 
 template <>
-void bindVector<uac::python::VecExcitationPtr>(pybind11::module_ &m) {
-  bindVectorNoBufferProtocol<uac::python::VecExcitationPtr, VEC_EXCITATION_PTR>(m);
+py::class_<uac::python::VecExcitationPtr> bindVector<uac::python::VecExcitationPtr>(
+    pybind11::module_ &m) {
+  return bindVectorNoBufferProtocol<uac::python::VecExcitationPtr, VEC_EXCITATION_PTR>(m);
 }
 template <>
-void bindVector<uac::python::VecEvent>(pybind11::module_ &m) {
-  bindVectorNoBufferProtocol<uac::python::VecEvent, VEC_EVENT>(m);
+py::class_<uac::python::VecWeakExcitationPtr> bindVector<uac::python::VecWeakExcitationPtr>(
+    pybind11::module_ &m) {
+  return bindVectorNoBufferProtocol<uac::python::VecWeakExcitationPtr, VEC_WEAK_EXCITATION_PTR>(m)
+      .def(py::self == uac::python::VecExcitationPtr());
 }
 template <>
-void bindVector<uac::python::VecGroupPtr>(pybind11::module_ &m) {
-  bindVectorNoBufferProtocol<uac::python::VecGroupPtr, VEC_GROUP_PTR>(m);
+py::class_<uac::python::VecEvent> bindVector<uac::python::VecEvent>(pybind11::module_ &m) {
+  return bindVectorNoBufferProtocol<uac::python::VecEvent, VEC_EVENT>(m);
 }
 template <>
-void bindVector<uac::python::VecSuperGroupPtr>(pybind11::module_ &m) {
-  bindVectorNoBufferProtocol<uac::python::VecSuperGroupPtr, VEC_SUPER_GROUP_PTR>(m);
+py::class_<uac::python::VecGroupPtr> bindVector<uac::python::VecGroupPtr>(pybind11::module_ &m) {
+  return bindVectorNoBufferProtocol<uac::python::VecGroupPtr, VEC_GROUP_PTR>(m);
 }
 template <>
-void bindVector<uac::python::VecDestinationLink>(pybind11::module_ &m) {
-  bindVectorNoBufferProtocol<uac::python::VecDestinationLink, VEC_DESTINATION_LINK>(m);
+py::class_<uac::python::VecSuperGroupPtr> bindVector<uac::python::VecSuperGroupPtr>(
+    pybind11::module_ &m) {
+  return bindVectorNoBufferProtocol<uac::python::VecSuperGroupPtr, VEC_SUPER_GROUP_PTR>(m);
 }
 template <>
-void bindVector<uac::python::VecHwConfig>(pybind11::module_ &m) {
-  bindVectorNoBufferProtocol<uac::python::VecHwConfig, VEC_HW_CONFIG>(m);
+py::class_<uac::python::VecDestinationLink> bindVector<uac::python::VecDestinationLink>(
+    pybind11::module_ &m) {
+  return bindVectorNoBufferProtocol<uac::python::VecDestinationLink, VEC_DESTINATION_LINK>(m);
+}
+template <>
+py::class_<uac::python::VecHwConfig> bindVector<uac::python::VecHwConfig>(pybind11::module_ &m) {
+  return bindVectorNoBufferProtocol<uac::python::VecHwConfig, VEC_HW_CONFIG>(m);
 }
 
 }  // namespace urx::python::detail
@@ -578,6 +588,7 @@ PYBIND11_MODULE(bindings, m, py::mod_gil_not_used()) {
                     const urx::python::VecFloat64 &, const uac::HwConfig &>())
       .def_readwrite("hw_config", &uac::Excitation::hw_config);
   urx::python::detail::bindVector<uac::python::VecExcitationPtr>(m);
+  urx::python::detail::bindVector<uac::python::VecWeakExcitationPtr>(m);
 
   /*
   urx::python::registerProbe<uac::Probe>(m, "Uac").def(

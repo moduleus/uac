@@ -14,8 +14,11 @@ def run():
     # change values
     dataset.acquisition.description = "Learning to modify values ..."
 
-    # save the output file
-    urx.saveToFile("rca-python.urx", dataset, urx.WriterOptions(False, False, False))
+    # save the output file with:
+    #   - Chunk mode enabled,
+    #   - not removal of unused data,
+    #   - not checking if data are valid.
+    urx.saveToFile("rca-python.urx", dataset, urx.WriterOptions(True, False, False))
 
 
 if __name__ == "__main__":

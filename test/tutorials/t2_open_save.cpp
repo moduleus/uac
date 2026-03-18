@@ -26,7 +26,11 @@ int main(int argc, char** argv) {
   // change values
   dataset->acquisition.description = "Learning to modify values ...";
 
-  urx::utils::io::writer::saveToFile("rca-cpp.urx", *dataset, {false, false, false});
+  // save the output file with:
+  //   - Chunk mode enabled,
+  //   - not removal of unused data,
+  //   - not checking if data are valid.
+  urx::utils::io::writer::saveToFile("rca-cpp.urx", *dataset, {true, false, false});
 
   return 0;
 }

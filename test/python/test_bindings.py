@@ -551,6 +551,7 @@ class TestBindings(unittest.TestCase):
     ):
         test_transmit_setup(
             self,
+            acquisition_constructor=lambda: uac.Acquisition(),
             transmit_setup_constructor=lambda: uac.TransmitSetup(),
             transmit_setup_copy=lambda copy: uac.TransmitSetup(copy),
             transmit_setup_args=lambda probe, wave, active_elements, excitations, delays, probe_transform, time_offset: uac.TransmitSetup(
@@ -571,6 +572,7 @@ class TestBindings(unittest.TestCase):
             double_nan_args=lambda arg1: uac.DoubleNan(arg1),
             vector3d_constructor=lambda: uac.Vector3D(),
             vector3d_args=lambda x, y, z: uac.Vector3D(x, y, z),
+            excitation_constructor=lambda: uac.Excitation(),
             excitation_copy=lambda copy: uac.Excitation(copy),
             excitation_args=lambda pulse_shape, transmit_frequency, sampling_frequency, waveform: uac.Excitation(
                 pulse_shape,
@@ -583,6 +585,7 @@ class TestBindings(unittest.TestCase):
             probe_copy=lambda copy: uac.Probe(copy),
             wave_constructor=lambda: uac.Wave(),
             wave_copy=lambda copy: uac.Wave(copy),
+            event_constructor=lambda: uac.Event(),
             enum_wave=lambda: uac.WaveType,
         )
 
